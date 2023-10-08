@@ -1,0 +1,12 @@
+core_cm0.h:629:22:NVIC_EnableIRQ	16	static
+core_cm0.h:688:22:NVIC_SetPriority	24	static
+SPI_for_TFT.c:11:6:DMA1_Channel2_3_IRQHandler	8	static
+SPI_for_TFT.c:20:6:init_GPIO_for_SPI	8	static
+SPI_for_TFT.c:30:6:SPI1_Master_init	24	static
+SPI_for_TFT.c:41:6:SPI1_setDataSize	24	static
+SPI_for_TFT.c:49:6:SPI_cs_set	8	static
+SPI_for_TFT.c:53:6:SPI_cs_clear	8	static
+SPI_for_TFT.c:57:6:DMA_for_SPI_init	8	static
+SPI_for_TFT.c:70:6:spi1_SendDataDMA_2byteNTimes	24	static
+SPI_for_TFT.c:85:6:spi1_SendDataDMA	24	static
+SPI_for_TFT.c:99:6:spi1_Send1byte	24	static

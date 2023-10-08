@@ -1,0 +1,6 @@
+buffer.c:11:6:InitBuffer	24	static
+buffer.c:23:6:Buffer_add_to_end	16	static
+buffer.c:36:9:Buffer_get_from_front	24	static
+buffer.c:51:9:Buffer_empty	16	static
+buffer.c:55:9:Buffer_is_full	16	static
+buffer.c:59:6:Clear_buffer	16	static

@@ -1,0 +1,2 @@
+TFT_display_temperature.c:14:6:Choose_symbol_for_draw	24	static
+TFT_display_temperature.c:71:6:TFT_draw_symbol	40	static

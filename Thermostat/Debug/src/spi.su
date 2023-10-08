@@ -1,0 +1,14 @@
+core_cm0.h:629:22:NVIC_EnableIRQ	16	static
+core_cm0.h:688:22:NVIC_SetPriority	24	static
+spi.c:24:6:SPI1_IRQHandler	8	static
+spi.c:32:6:DMA1_Channel2_3_IRQHandler	8	static
+spi.c:39:9:spi1_dma_end	8	static
+spi.c:43:13:spi1_cs_set	8	static
+spi.c:47:6:spi1_cs_clear	8	static
+spi.c:51:6:gpio_spi1_init	8	static
+spi.c:62:13:spi1_dma_tx_init	8	static
+spi.c:77:6:spi1_master_init	24	static
+spi.c:99:6:spi1_setDataSize	24	static
+spi.c:107:6:spi1_SendDataDMA_1Byte	24	static
+spi.c:126:6:spi1_SendDataDMA_2byte	24	static
+spi.c:148:6:spi1_SendDataDMA_2byteNTimes	16	static

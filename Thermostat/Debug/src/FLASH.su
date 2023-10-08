@@ -1,0 +1,5 @@
+FLASH.c:11:6:Set_protection_of_flash	8	static
+FLASH.c:15:6:Flash_unlock	8	static
+FLASH.c:24:6:Erase_Page	16	static
+FLASH.c:46:6:Write_data_to_flash	32	static
+FLASH.c:71:6:ReadFromFlash	32	static
