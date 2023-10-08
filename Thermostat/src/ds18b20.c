@@ -13,7 +13,8 @@ uint16_t temp;
 void TIM2_IRQHandler() {
 	TIM2->SR &= ~TIM_SR_UIF;
 	TIM2->CR1 &= ~TIM_CR1_CEN;
-	GPIOC->ODR ^= GPIO_ODR_8;
+	if(program_task == TEMPERATURE_CONVERTING)
+		program_task = TEMPERATURE_READING;
 }
 
 void init_ds() {
@@ -32,14 +33,14 @@ void init_Gpio_for_ds() {
 void init_tim3_for_us() {
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 	TIM3->ARR = 1000;
-	TIM3->PSC = 8;
+	TIM3->PSC = 8 * FREQ_MULTIPLIER_COEF;
 	TIM3->CR1 = TIM_CR1_CEN;
 }
 
 void init_tim2_for_delay() {
 	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-	TIM2->ARR = 4000;
-	TIM2->PSC = 1000;
+	TIM2->ARR = 8000;
+	TIM2->PSC = 1000 * FREQ_MULTIPLIER_COEF;
 	TIM2->DIER |= TIM_DIER_UIE;
 	NVIC_EnableIRQ(TIM2_IRQn);
 	NVIC_SetPriority(TIM2_IRQn, 1);
@@ -102,18 +103,19 @@ uint8_t ds_read_byte(uint16_t PinMask)
    return result;
 }
 
-void delay(uint16_t time) {
-	TIM2->ARR = (time << 3); // умножение на 8 :)
+void delay() {
 	TIM2->CNT = 0;
 	TIM2->CR1 = TIM_CR1_CEN;
-	while(TIM2->CR1 & TIM_CR1_CEN) {};
 }
 
-void temp_measur() {
+void temperature_measurment_start() {
 	ds_reset_pulse(1 << PIN);          //послать импульс сброса                                       /
 	ds_write_byte(SKIP_ROM_ADR, 1 << PIN);//разрешить доступ к датчику не использу€ адрес
 	ds_write_byte(CONVERT_TEMP, 1 << PIN);      //запустить преобразование
-	delay(TIME_FOR_CONVERT_TEMP);               //дать врем€ дл€ измерени€
+	delay();               //дать врем€ дл€ измерени€
+}
+
+void temprepature_measurment_read() {
 	ds_reset_pulse(1 << PIN);          //послать импульс сброса
 	ds_write_byte(SKIP_ROM_ADR, 1 << PIN);//разрешить доступ к датчику не использу€ адрес
 	ds_write_byte(READ_DATA_COMAND, 1 << PIN);      //команда, заставл€юща€ датчик выдать 9 байт своей пам€ти
@@ -122,5 +124,6 @@ void temp_measur() {
 	temp = ds_buff[1];
 	temp = temp << 8;
 	temp |= ds_buff[0];
-//	double real_temp = temp * 0.0625;
+	temperature = temp * 0.0625;
+	program_task = TEMPERATURE_DISPLAYING;
 }

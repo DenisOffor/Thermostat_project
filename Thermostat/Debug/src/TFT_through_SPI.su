@@ -10,9 +10,9 @@ TFT_through_SPI.c:67:6:TFT_display_normal_mode	16	static
 TFT_through_SPI.c:73:6:TFT_display_on	16	static
 TFT_through_SPI.c:78:6:TFT_pixel_format	16	static
 TFT_through_SPI.c:85:6:TFT_clearAllDisplay	40	static
-TFT_through_SPI.c:105:6:TFT_clearPartDisplay	32	static
-TFT_through_SPI.c:111:6:TFT_set_region	32	static
-TFT_through_SPI.c:121:6:TFT_colorise	32	static
-TFT_through_SPI.c:129:6:TFT_ram_write	16	static
-TFT_through_SPI.c:135:6:TFT_set_column	24	static
-TFT_through_SPI.c:144:6:TFT_set_row	24	static
+TFT_through_SPI.c:105:6:TFT_clearPartDisplay	40	static
+TFT_through_SPI.c:112:6:TFT_set_region	32	static
+TFT_through_SPI.c:122:6:TFT_colorise	32	static
+TFT_through_SPI.c:130:6:TFT_ram_write	16	static
+TFT_through_SPI.c:136:6:TFT_set_column	24	static
+TFT_through_SPI.c:145:6:TFT_set_row	24	static

@@ -7,11 +7,12 @@
 
 #include "constant.h"
 
-PROGRAM_TASK program_task = 0;
+PROGRAM_TASK program_task = WAITING;
 
 uint8_t buf_tx[BUFFER_SIZE];
 uint16_t color_mat[2048];
 uint8_t mat_for_symbol[FLASH_PAGE_SIZE];
+double temperature = 0;
 
 //uint8_t mat_for_symbol1[1024] = { 0xFF, 0xFF, 0xFF, 0xFF,
 //		0xFF, 0xFF, 0xFF, 0xFF,

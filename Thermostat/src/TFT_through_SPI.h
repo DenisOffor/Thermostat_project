@@ -10,6 +10,9 @@
 
 #include "SPI_for_TFT.h"
 
+#define TFT_WIDTH 240
+#define TFT_HEIGHT 320
+
 void TFT_init();
 void DC_set();
 void DC_clear();

@@ -41,8 +41,10 @@ void ds_write_byte(uint8_t byte, uint16_t PinMask);
 
 uint8_t ds_read_byte(uint16_t PinMask);
 
-void delay(uint16_t time /*in ms*/);
+void delay();
 
-void temp_measur();
+void temperature_measurment_start();
+
+void temprepature_measurment_read();
 
 #endif /* DS18B20_H_ */
