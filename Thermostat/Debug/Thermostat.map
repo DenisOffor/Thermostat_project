@@ -10,12 +10,6 @@ c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gc
                               src\tiny_printf.o (__aeabi_idiv)
 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_dvmd_tls.o)
                               c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivsi3.o) (__aeabi_idiv0)
-c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
-                              src\ds18b20.o (__aeabi_dmul)
-c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
-                              src\ds18b20.o (__aeabi_i2d)
-c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_clzsi2.o)
-                              c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o) (__clzsi2)
 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(write.o)
                               src\tiny_printf.o (_write)
 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(errno.o)
@@ -84,7 +78,7 @@ Discarded input sections
                 0x00000000       0x48 src\buffer.o
  .debug_ranges  0x00000000       0x38 src\buffer.o
  .debug_line    0x00000000      0x1f5 src\buffer.o
- .debug_str     0x00000000      0x284 src\buffer.o
+ .debug_str     0x00000000      0x297 src\buffer.o
  .comment       0x00000000       0x7d src\buffer.o
  .debug_frame   0x00000000       0xd0 src\buffer.o
  .ARM.attributes
@@ -99,7 +93,7 @@ Discarded input sections
  .debug_aranges
                 0x00000000       0x18 src\constant.o
  .debug_line    0x00000000      0x15a src\constant.o
- .debug_str     0x00000000      0x220 src\constant.o
+ .debug_str     0x00000000      0x233 src\constant.o
  .comment       0x00000000       0x7d src\constant.o
  .ARM.attributes
                 0x00000000       0x31 src\constant.o
@@ -129,7 +123,7 @@ Discarded input sections
                 0x00000000       0x70 src\ds18b20.o
  .text.delay    0x00000000       0x3e src\ds18b20.o
  .text.temp_measur
-                0x00000000       0xd4 src\ds18b20.o
+                0x00000000       0xb8 src\ds18b20.o
  COMMON         0x00000000        0xc src\ds18b20.o
  .text          0x00000000        0x0 src\main.o
  .data          0x00000000        0x0 src\main.o
@@ -175,7 +169,7 @@ Discarded input sections
                 0x00000000       0x60 src\tiny_printf.o
  .debug_ranges  0x00000000       0x50 src\tiny_printf.o
  .debug_line    0x00000000      0x2bf src\tiny_printf.o
- .debug_str     0x00000000      0x65a src\tiny_printf.o
+ .debug_str     0x00000000      0x66d src\tiny_printf.o
  .comment       0x00000000       0x7d src\tiny_printf.o
  .debug_frame   0x00000000      0x140 src\tiny_printf.o
  .ARM.attributes
@@ -205,24 +199,6 @@ Discarded input sections
  .bss           0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_dvmd_tls.o)
  .ARM.attributes
                 0x00000000       0x1e c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_dvmd_tls.o)
- .text          0x00000000      0x500 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
- .data          0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
- .bss           0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
- .rodata        0x00000000       0x40 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
- .debug_frame   0x00000000       0x3c c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
- .ARM.attributes
-                0x00000000       0x2c c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
- .text          0x00000000       0x84 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
- .data          0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
- .bss           0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
- .debug_frame   0x00000000       0x2c c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
- .ARM.attributes
-                0x00000000       0x2c c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
- .text          0x00000000       0x3c c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_clzsi2.o)
- .data          0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_clzsi2.o)
- .bss           0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_clzsi2.o)
- .ARM.attributes
-                0x00000000       0x1e c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_clzsi2.o)
  .text          0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(write.o)
  .data          0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(write.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/../../../../arm-atollic-eabi/lib/armv6-m\libnosys.a(write.o)
@@ -595,15 +571,15 @@ LOAD c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../l
                 0x000001ee       0x1e c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtn.o
 OUTPUT(Thermostat.elf elf32-littlearm)
 
-.debug_info     0x00000000     0x23e8
+.debug_info     0x00000000     0x23e6
  .debug_info    0x00000000      0x2a6 src\FLASH.o
  .debug_info    0x000002a6      0x8ae src\SPI_for_TFT.o
  .debug_info    0x00000b54      0x290 src\TFT_display_temperature.o
  .debug_info    0x00000de4      0x724 src\TFT_through_SPI.o
- .debug_info    0x00001508      0x922 src\ds18b20.o
- .debug_info    0x00001e2a      0x308 src\main.o
- .debug_info    0x00002132       0x6c src\startup_stm32f051x8.o
- .debug_info    0x0000219e      0x24a src\system_stm32f0xx.o
+ .debug_info    0x00001508      0x90d src\ds18b20.o
+ .debug_info    0x00001e15      0x308 src\main.o
+ .debug_info    0x0000211d       0x7f src\startup_stm32f051x8.o
+ .debug_info    0x0000219c      0x24a src\system_stm32f0xx.o
 
 .debug_abbrev   0x00000000      0xa50
  .debug_abbrev  0x00000000      0x129 src\FLASH.o
@@ -643,31 +619,31 @@ OUTPUT(Thermostat.elf elf32-littlearm)
  .debug_ranges  0x000001e0       0x20 src\startup_stm32f051x8.o
  .debug_ranges  0x00000200       0x18 src\system_stm32f0xx.o
 
-.debug_line     0x00000000     0x12ca
+.debug_line     0x00000000     0x12c9
  .debug_line    0x00000000      0x222 src\FLASH.o
  .debug_line    0x00000222      0x316 src\SPI_for_TFT.o
  .debug_line    0x00000538      0x217 src\TFT_display_temperature.o
  .debug_line    0x0000074f      0x3d6 src\TFT_through_SPI.o
- .debug_line    0x00000b25      0x36f src\ds18b20.o
- .debug_line    0x00000e94      0x1ff src\main.o
- .debug_line    0x00001093       0x7f src\startup_stm32f051x8.o
- .debug_line    0x00001112      0x1b8 src\system_stm32f0xx.o
+ .debug_line    0x00000b25      0x36e src\ds18b20.o
+ .debug_line    0x00000e93      0x1ff src\main.o
+ .debug_line    0x00001092       0x7f src\startup_stm32f051x8.o
+ .debug_line    0x00001111      0x1b8 src\system_stm32f0xx.o
 
-.debug_str      0x00000000      0xa8d
- .debug_str     0x00000000      0x23b src\FLASH.o
-                                0x293 (size before relaxing)
- .debug_str     0x0000023b      0x493 src\SPI_for_TFT.o
-                                0x675 (size before relaxing)
- .debug_str     0x000006ce       0xa6 src\TFT_display_temperature.o
-                                0x2c9 (size before relaxing)
- .debug_str     0x00000774      0x175 src\TFT_through_SPI.o
-                                0x3cd (size before relaxing)
- .debug_str     0x000008e9      0x120 src\ds18b20.o
-                                0x639 (size before relaxing)
- .debug_str     0x00000a09       0x2a src\main.o
+.debug_str      0x00000000      0xa8f
+ .debug_str     0x00000000      0x24e src\FLASH.o
                                 0x2a6 (size before relaxing)
- .debug_str     0x00000a33       0x5a src\system_stm32f0xx.o
-                                0x25b (size before relaxing)
+ .debug_str     0x0000024e      0x493 src\SPI_for_TFT.o
+                                0x688 (size before relaxing)
+ .debug_str     0x000006e1       0xa6 src\TFT_display_temperature.o
+                                0x2dc (size before relaxing)
+ .debug_str     0x00000787      0x175 src\TFT_through_SPI.o
+                                0x3e0 (size before relaxing)
+ .debug_str     0x000008fc      0x10f src\ds18b20.o
+                                0x63b (size before relaxing)
+ .debug_str     0x00000a0b       0x2a src\main.o
+                                0x2b9 (size before relaxing)
+ .debug_str     0x00000a35       0x5a src\system_stm32f0xx.o
+                                0x26e (size before relaxing)
 
 .comment        0x00000000       0x7c
  .comment       0x00000000       0x7c src\FLASH.o
@@ -779,10 +755,6 @@ USART1_IRQHandler                                 src\startup_stm32f051x8.o
 USART2_IRQHandler                                 src\startup_stm32f051x8.o
 WWDG_IRQHandler                                   src\startup_stm32f051x8.o
 Write_data_to_flash                               src\FLASH.o
-__aeabi_dmul                                      c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
-                                                  src\ds18b20.o
-__aeabi_i2d                                       c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
-                                                  src\ds18b20.o
 __aeabi_idiv                                      c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_divsi3.o)
                                                   src\tiny_printf.o
 __aeabi_idiv0                                     c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_dvmd_tls.o)
@@ -795,9 +767,6 @@ __aeabi_uidiv                                     c:/program files (x86)/atollic
                                                   src\system_stm32f0xx.o
 __aeabi_uidivmod                                  c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_udivsi3.o)
                                                   src\tiny_printf.o
-__clzsi2                                          c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_clzsi2.o)
-                                                  c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(floatsidf.o)
-                                                  c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(muldf3.o)
 __deregister_frame_info                           c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o
 __divsi3                                          c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m\libgcc.a(_divsi3.o)
 __dso_handle                                      c:/program files (x86)/atollic/truestudio for stm32 9.3.0/armtools/bin/../lib/gcc/arm-atollic-eabi/6.3.1/armv6-m/crtbegin.o

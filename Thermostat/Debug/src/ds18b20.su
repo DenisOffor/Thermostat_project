@@ -11,4 +11,4 @@ ds18b20.c:78:9:ds_read_bit	24	static
 ds18b20.c:91:6:ds_write_byte	24	static
 ds18b20.c:97:9:ds_read_byte	24	static
 ds18b20.c:105:6:delay	16	static
-ds18b20.c:112:6:temp_measur	32	static
+ds18b20.c:112:6:temp_measur	16	static

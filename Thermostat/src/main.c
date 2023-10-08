@@ -10,7 +10,7 @@ void process_cmd() {
 			temp_measur();
 			break;
 	}
-}4
+};
 
 
 int main(void)
@@ -22,7 +22,7 @@ int main(void)
 	init_clock();
 	//init_ds();
 	TFT_init();
-	Choose_symbol_for_draw('6');
+	Choose_symbol_for_draw('c');
 	for(int i = 0; i < 10000; i++);
 	while (1)
 	{

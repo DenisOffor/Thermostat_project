@@ -122,5 +122,5 @@ void temp_measur() {
 	temp = ds_buff[1];
 	temp = temp << 8;
 	temp |= ds_buff[0];
-	double real_temp = temp * 0.0625;
+//	double real_temp = temp * 0.0625;
 }

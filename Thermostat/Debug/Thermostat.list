@@ -21,19 +21,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
   8 .ARM.attributes 00000028  00000000  00000000  000112e4  2**0
                   CONTENTS, READONLY
-  9 .debug_info   000023e8  00000000  00000000  0001130c  2**0
+  9 .debug_info   000023e6  00000000  00000000  0001130c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_abbrev 00000a50  00000000  00000000  000136f4  2**0
+ 10 .debug_abbrev 00000a50  00000000  00000000  000136f2  2**0
                   CONTENTS, READONLY, DEBUGGING
  11 .debug_aranges 00000290  00000000  00000000  00014148  2**3
                   CONTENTS, READONLY, DEBUGGING
  12 .debug_ranges 00000218  00000000  00000000  000143d8  2**3
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_line   000012ca  00000000  00000000  000145f0  2**0
+ 13 .debug_line   000012c9  00000000  00000000  000145f0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_str    00000a8d  00000000  00000000  000158ba  2**0
+ 14 .debug_str    00000a8f  00000000  00000000  000158b9  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .comment      0000007c  00000000  00000000  00016347  2**0
+ 15 .comment      0000007c  00000000  00000000  00016348  2**0
                   CONTENTS, READONLY
  16 .debug_frame  0000075c  00000000  00000000  000163c4  2**2
                   CONTENTS, READONLY, DEBUGGING
@@ -2329,7 +2329,7 @@ void TIM2_IRQHandler() {
 
 08000ff8 <main>:
 	}
-}
+};
 
 
 int main(void)
@@ -2346,8 +2346,8 @@ int main(void)
 	//init_ds();
 	TFT_init();
  8001002:	f7ff fdb9 	bl	8000b78 <TFT_init>
-	Choose_symbol_for_draw('6');
- 8001006:	2036      	movs	r0, #54	; 0x36
+	Choose_symbol_for_draw('c');
+ 8001006:	2063      	movs	r0, #99	; 0x63
  8001008:	f7ff fb26 	bl	8000658 <Choose_symbol_for_draw>
 	for(int i = 0; i < 10000; i++);
  800100c:	2300      	movs	r3, #0

@@ -1,0 +1,5 @@
+Debug/
+Drivers/
+stm32_flash.ld
+.settings
+.metadata
