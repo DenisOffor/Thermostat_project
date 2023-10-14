@@ -23,6 +23,7 @@
 
 typedef struct Symbol_Distribution
 {
+	uint8_t char_output[MAX_SIZE_OF_OUTPUT];
 	uint8_t consequense_of_output[MAX_SIZE_OF_OUTPUT];
 	uint16_t custom_width[MAX_SIZE_OF_OUTPUT];
 	uint8_t amout_of_symbols;
@@ -47,7 +48,7 @@ void display_temperature(double temperature);
 void Symbol_Distribution_clear();
 void Parse_temperature(double* temperature);
 void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_col);
-void TFT_draw_symbol(uint16_t start_position, uint16_t end_position, uint8_t symbol_width,
+void TFT_draw_symbol(uint16_t start_position_in_arr, uint16_t end_position_in_arr, uint8_t symbol_width,
 		uint8_t symbol_height, uint8_t start_row, uint8_t start_col);
 
 #endif /* TFT_DISPLAY_TEMPERATURE_H_ */

@@ -11,7 +11,7 @@
 #include "TFT_display_temperature.h"
 
 Symbol_Distribution symbol_distribution;
-static uint8_t previous_amount = 0;
+uint8_t previous_amount_of_symbols = 0;
 
 void display_temperature(double temperature) {
 	Symbol_Distribution_clear();
@@ -21,23 +21,25 @@ void display_temperature(double temperature) {
 	for(uint8_t i = 0; i < symbol_distribution.amout_of_symbols; i++)
 		full_width += symbol_distribution.custom_width[i];
 	//full_width += SPACE_BEETWEN_SYMBOLS * (symbol_distribution.amout_of_symbols - 2);
-	if(previous_amount != symbol_distribution.amout_of_symbols)
+	if(previous_amount_of_symbols != symbol_distribution.amout_of_symbols)
 		TFT_clearPartDisplay(0x00, 0x00, 0x00);
 	uint8_t start_col = (TFT_WIDTH - full_width) / 2;
-	for(int i = symbol_distribution.amout_of_symbols - 1; i >= 0; i--) {
+	for(int i = symbol_distribution.amout_of_symbols - 1; i >= 0; i--) { //mirror output just for eliminate sending cmd to TFT
 		Choose_symbol_for_draw(symbol_distribution.consequense_of_output[i], start_col);
 		start_col += symbol_distribution.custom_width[i];
 		for(uint16_t i = 0; i < 1000; i++);
 	}
-	previous_amount = symbol_distribution.amout_of_symbols;
+	previous_amount_of_symbols = symbol_distribution.amout_of_symbols;
 	program_task = WAITING;
 }
 
 void Symbol_Distribution_clear () {
 	for(uint8_t i = 0; i < MAX_SIZE_OF_OUTPUT; i++)
+		symbol_distribution.char_output[i] = 0;
+	for(uint8_t i = 0; i < MAX_SIZE_OF_OUTPUT; i++)
 		symbol_distribution.consequense_of_output[i] = 0;
 	for(uint8_t i = 0; i < MAX_SIZE_OF_OUTPUT; i++)
-			symbol_distribution.custom_width[i] = 0;
+		symbol_distribution.custom_width[i] = 0;
 	symbol_distribution.amout_of_symbols = 0;
 	symbol_distribution.amout_of_0 = 0;
 	symbol_distribution.amout_of_1 = 0;
@@ -56,32 +58,34 @@ void Symbol_Distribution_clear () {
 
 void Parse_temperature(double* temperature) {
 	double temp = *temperature;
-
 	//if temperature is negative then add minus to symbols array
 	if(temp < 0){
 		symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = MINUS_WIDTH;
-		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = Number_for_MINUS;
+		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = Number_for_MINUS;
+		symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = '-';
 	}
-
 	//there is always 1 symbol before dot, so if digit < 1 then there is zero before dot
 	if(abs(temp) < 1) {
 		symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = DIGIT_WIDTH;
-		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = 0;
+		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = 0;
+		symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = '0';
 	}
 	//find amount of tens
 	if(abs(temp) >= 10 ) {
 		temp /= 10;
 		symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = DIGIT_WIDTH;
-		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = abs(temp);
+		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = abs(temp);
+		symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = ((char)abs(temp)) + 48;
 	}
 	//find amount of units
 	if(abs(temp) >= 1 ) {
 		temp = fmod(*temperature,10.0);
 		symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = DIGIT_WIDTH;
-		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = abs(temp);
+		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = abs(temp);
+		symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = ((char)abs(temp)) + 48;
 	}
-
-	temp = fmod(*temperature,1.0); //check on fractional part of digit
+	//check on fractional part of digit
+	temp = fmod(*temperature,1.0);
 	if(temp == 0) {				   //if it absent then add celsium symbol and return
 		symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = CELSIUM_WIDTH;
 		symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = Number_for_CELSIUM;
@@ -90,23 +94,27 @@ void Parse_temperature(double* temperature) {
 
 	//else display digit with 2 digit after dot
 	symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = DOT_WIDTH;
-	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = Number_for_DOT;
+	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = Number_for_DOT;
+	symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = '.';
 
 	double fractionalPart = fmod(*temperature, 1.0);
 	fractionalPart *= 10.0;
 	symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = DIGIT_WIDTH;
-	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = abs(fractionalPart);
+	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = abs(fractionalPart);
+	symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = ((char)abs(fractionalPart)) + 48;
 
 	fractionalPart = fmod(*temperature, 0.1);
 	fractionalPart *= 100.0;
 	symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = DIGIT_WIDTH;
-	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = abs(fractionalPart);
+	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols] = abs(fractionalPart);
+	symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = ((char)abs(fractionalPart)) + 48;
 
 	symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = CELSIUM_WIDTH;
 	symbol_distribution.consequense_of_output[symbol_distribution.amout_of_symbols++] = Number_for_CELSIUM;
 }
 
 void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_col) {
+	//read symbol arr from FLASH and draw it
 	switch(symbol) {
 	case 0:
 		ReadFromFlash(PAGE60_FOR_0_1_2_3, &mat_for_symbol[0], FLASH_PAGE_SIZE);
@@ -163,21 +171,23 @@ void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_col) {
 	}
 }
 
-void TFT_draw_symbol(uint16_t start_position, uint16_t end_position, uint8_t symbol_width, uint8_t symbol_height, uint8_t start_row, uint8_t start_col) {
-	uint16_t parcel = (end_position - start_position) / AMOUNT_OF_PARCEL;
+void TFT_draw_symbol(uint16_t start_position_in_arr, uint16_t end_position_in_arr, uint8_t symbol_width, uint8_t symbol_height, uint8_t start_row, uint8_t start_col) {
+	//split color mat on block, because 64*64 symbol need 4096*2 byte, but RAM just 8kb, so to reduce size of color_mat there are parcels
+	uint16_t parcel = (end_position_in_arr - start_position_in_arr) / AMOUNT_OF_PARCEL;
 	for(uint8_t parcel_iter = 0; parcel_iter < AMOUNT_OF_PARCEL; parcel_iter++) {
-		for(uint16_t i = start_position + parcel_iter * parcel; i < start_position + parcel + parcel_iter * parcel; i++) {
+		for(uint16_t i = start_position_in_arr + parcel_iter * parcel; i < start_position_in_arr + parcel + parcel_iter * parcel; i++) {
 			for(uint16_t j = 0; j < 8; j++) {
+				//take the bit from byte and, depending on 0 or 1 it is, write color in color_mat
 				if((mat_for_symbol[i] << j) & 0x80) {
-					color_mat[8*(i - start_position - parcel_iter * parcel) + j] = 0x0000;
+					color_mat[8*(i - start_position_in_arr - parcel_iter * parcel) + j] = 0x0000;
 					continue;
 				}
-				color_mat[8*(i - start_position - parcel_iter * parcel) + j] = 0xFFFF;
+				color_mat[8*(i - start_position_in_arr - parcel_iter * parcel) + j] = 0xFFFF;
 			}
 		}
 		TFT_set_region(0x00, start_row + symbol_height / AMOUNT_OF_PARCEL * parcel_iter, start_row + symbol_height / AMOUNT_OF_PARCEL + symbol_height / AMOUNT_OF_PARCEL * parcel_iter - 1, start_col, start_col + symbol_width - 1);
 		Set_DC_data();
-		spi1_SendDataDMA(&color_mat[0], parcel*8);
+		SPI1_SendDataDMA(&color_mat[0], parcel*8);
 	}
 }
 

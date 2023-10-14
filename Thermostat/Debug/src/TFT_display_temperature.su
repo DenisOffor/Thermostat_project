@@ -1,5 +1,5 @@
 TFT_display_temperature.c:16:6:display_temperature	32	static
 TFT_display_temperature.c:36:6:Symbol_Distribution_clear	16	static
-TFT_display_temperature.c:57:6:Parse_temperature	40	static
-TFT_display_temperature.c:109:6:Choose_symbol_for_draw	24	static
-TFT_display_temperature.c:166:6:TFT_draw_symbol	40	static
+TFT_display_temperature.c:59:6:Parse_temperature	40	static
+TFT_display_temperature.c:116:6:Choose_symbol_for_draw	24	static
+TFT_display_temperature.c:174:6:TFT_draw_symbol	40	static

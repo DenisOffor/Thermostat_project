@@ -9,10 +9,13 @@
 
 PROGRAM_TASK program_task = WAITING;
 
+uint8_t UART_tx_buf[BUFFER_SIZE];
+uint8_t UART_rx_buf[2];
 uint8_t buf_tx[BUFFER_SIZE];
 uint16_t color_mat[2048];
 uint8_t mat_for_symbol[FLASH_PAGE_SIZE];
 double temperature = 0;
+double temperature_aim = 25;
 
 //uint8_t mat_for_symbol1[1024] = { 0xFF, 0xFF, 0xFF, 0xFF,
 //		0xFF, 0xFF, 0xFF, 0xFF,

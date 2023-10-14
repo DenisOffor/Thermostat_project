@@ -5,11 +5,11 @@ ds18b20.c:20:6:init_ds	8	static
 ds18b20.c:26:6:init_Gpio_for_ds	8	static
 ds18b20.c:33:6:init_tim3_for_us	8	static
 ds18b20.c:40:6:init_tim2_for_delay	8	static
-ds18b20.c:50:9:ds_reset_pulse	24	static
+ds18b20.c:50:9:ds_reset_pulse	16	static
 ds18b20.c:68:6:ds_write_bit	16	static
-ds18b20.c:79:9:ds_read_bit	24	static
-ds18b20.c:92:6:ds_write_byte	24	static
-ds18b20.c:98:9:ds_read_byte	24	static
-ds18b20.c:106:6:delay	8	static
+ds18b20.c:79:6:ds_write_byte	24	static
+ds18b20.c:85:9:ds_read_bit	16	static
+ds18b20.c:98:9:ds_read_byte	16	static
+ds18b20.c:106:6:TIM_on_1sec	8	static
 ds18b20.c:111:6:temperature_measurment_start	8	static
 ds18b20.c:118:6:temprepature_measurment_read	24	static

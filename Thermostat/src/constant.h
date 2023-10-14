@@ -12,14 +12,7 @@
 #include "buffer.h"
 #include "FLASH.h"
 
-#define PORT_SPI GPIOA
-#define PA_MOSI 7
-#define PA_DC 6
-#define PA_SCK 5
-#define PA_CS 4
-#define PA_RST 3
 #define FREQ_MULTIPLIER_COEF 5
-
 
 //uint8_t mat_for_symbol1[1024];
 //uint8_t mat_for_symbol2[1024];
@@ -29,7 +22,11 @@
 uint16_t color_mat[2048];
 uint8_t mat_for_symbol[FLASH_PAGE_SIZE];
 uint8_t buf_tx[BUFFER_SIZE];
+uint8_t UART_tx_buf[BUFFER_SIZE];
+uint8_t UART_rx_buf[2];
+
 double temperature;
+double temperature_aim;
 
 typedef enum PROGRAM_TASK{
 	WAITING = 0,

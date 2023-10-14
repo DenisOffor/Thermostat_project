@@ -1,10 +1,5 @@
-core_cm0.h:629:22:NVIC_EnableIRQ	16	static
-core_cm0.h:688:22:NVIC_SetPriority	24	static
-main.c:7:6:process_cmd	16	static
-main.c:24:6:TIM6_DAC_IRQHandler	8	static
-main.c:31:6:EXTI0_1_IRQHandler	8	static
-main.c:43:6:init_GPIO	8	static
-main.c:50:6:init_GPIO_for_Button	8	static
-main.c:65:6:init_TIM6_for_rattle_eliminating	8	static
-main.c:76:5:main	8	static
-main.c:98:6:init_clock	8	static
+main.c:12:5:main	8	static
+main.c:26:6:check_UART_cmd	16	static
+main.c:36:6:init_periphery	8	static
+main.c:48:6:process_cmd	16	static
+main.c:67:6:init_clock	8	static

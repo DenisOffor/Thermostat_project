@@ -11,14 +11,13 @@
 void DMA1_Channel2_3_IRQHandler() {
 	if (DMA1->ISR & DMA_ISR_TCIF3) {
 		DMA1->IFCR |= DMA_IFCR_CTCIF3;
-		status_dma_tx = 1;
 		SPI_cs_set();
 		DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 	}
 }
 
 void init_GPIO_for_SPI() {
-	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+	RCC->AHBENR |= SPI_RCC_GPIO;
 	PORT_SPI->MODER |= SPI_SCK_MODER | SPI_MOSI_MODER;
 	//AF0
 	GPIOA->AFR[0] &= ~(GPIO_AFRL_AFRL5 | GPIO_AFRL_AFRL7);
@@ -47,11 +46,11 @@ void SPI1_setDataSize(uint8_t am_bits_send) {
 }
 
 void SPI_cs_set() {
-	PORT_SPI->ODR |= (1 << PA_CS);
+	PORT_SPI->ODR |= (1 << PIN_CS);
 }
 
 void SPI_cs_clear() {
-	PORT_SPI->ODR &= ~(1 << PA_CS);
+	PORT_SPI->ODR &= ~(1 << PIN_CS);
 }
 
 void DMA_for_SPI_init() {
@@ -66,8 +65,7 @@ void DMA_for_SPI_init() {
 	NVIC_SetPriority(DMA1_Channel2_3_IRQn, 5);
 }
 
-uint16_t status_dma_tx;
-void spi1_SendDataDMA_2byteNTimes(uint16_t data, uint16_t count_word) {
+void SPI1_SendDataDMA_2byteNTimes(uint16_t data, uint16_t count_word) {
 	DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 	DMA1_Channel3->CCR |= DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0;
 	DMA1_Channel3->CCR &= ~DMA_CCR_MINC;
@@ -82,7 +80,7 @@ void spi1_SendDataDMA_2byteNTimes(uint16_t data, uint16_t count_word) {
 	DMA1_Channel3->CCR |= DMA_CCR_EN;
 }
 
-void spi1_SendDataDMA(uint16_t* data, uint16_t count_word) {
+void SPI1_SendDataDMA(uint16_t* data, uint16_t count_word) {
 	DMA1_Channel3->CCR &= ~DMA_CCR_EN;
 	DMA1_Channel3->CCR |= DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0;
 	DMA1_Channel3->CCR |= DMA_CCR_MINC;
@@ -96,7 +94,7 @@ void spi1_SendDataDMA(uint16_t* data, uint16_t count_word) {
 	DMA1_Channel3->CCR |= DMA_CCR_EN;
 }
 
-void spi1_Send1byte(uint8_t* data, uint8_t count_byte) {
+void SPI1_Send1byte(uint8_t* data, uint8_t count_byte) {
 	SPI1_setDataSize(8);
 	SPI_cs_clear();
 	for(int i = 0; i < 10; i++);
