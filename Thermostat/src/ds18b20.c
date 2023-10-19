@@ -56,7 +56,7 @@ uint8_t ds_reset_pulse()
 	TIM3->CNT = 0;
 	while(TIM3->CNT < 480) {};        //ждать 480 микросекунд
 	PORT_DS18B20->ODR |= (1 << PIN_DS18B20);            //отпустить шину
-	while(TIM3->CNT < 550) {};        //ждать 70 микросекунд
+	while(TIM3->CNT < 530) {};        //ждать 70 микросекунд
 	result = (PORT_DS18B20->IDR & (1 << PIN_DS18B20)) << PIN_DS18B20;     //прочитать шину
 	while(TIM3->CNT < 960) {};        //дождаться окончания инициализации
 	if(result)

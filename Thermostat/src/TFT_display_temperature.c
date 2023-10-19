@@ -34,6 +34,9 @@ void display_temperature(double temperature, TYPE_OF_TEMPERATURE type_of_temp) {
 				TFT_clearPartDisplay(0x00, 0x00, 0x00, START_ROW_AIM_TEMP, START_ROW_AIM_TEMP + DIGIT_HEIGHT);
 			start_row = START_ROW_AIM_TEMP;
 			break;
+		case NTC_TEMP:
+			start_row = START_ROW_NTC_TEMP;
+			break;
 	}
 
 	uint8_t start_col = (TFT_WIDTH - full_width) / 2;

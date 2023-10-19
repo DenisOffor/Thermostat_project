@@ -14,21 +14,49 @@ void TIM6_DAC_IRQHandler(void) {
 	if(temperatures.aim_temperature == RESET_TEMPERATURE)
 		regulate_status = WAITING;
 	else
-		regulate_status = HEATING;
+		regulate_status = MAINTENANCE;
 }
 
 void Relay_regulating() {
 	if(program_task == TURN_OFF)
 		return;
+
+	float time_heat = 0;
+
 	switch(regulate_status) {
 		case WAITING:
 			relay_off();
 			break;
-		case HEATING:
-			if(temperatures.curr_temperature < temperatures.aim_temperature)
+		case MAINTENANCE:
+			if(temperatures.curr_temperature < (temperatures.aim_temperature - 0.3)) {
+				TIM6->ARR = 1000 * 2;
 				relay_on();
-			if(temperatures.curr_temperature > temperatures.aim_temperature)
-				relay_off();
+				TIM6->CR1 |= TIM_CR1_CEN;
+			}
+			break;
+		case HEATING:
+			if(temperatures.curr_temperature < 30)
+				time_heat += (30 - temperatures.curr_temperature) / FACTOR_UNDER_30;
+
+			if(temperatures.curr_temperature > 30 && temperatures.aim_temperature > 40)
+				time_heat += (40 - temperatures.curr_temperature) / FACTOR_UNDER_40;
+
+			if(temperatures.curr_temperature < 30 && temperatures.aim_temperature > 40)
+				time_heat += (40 - 30) / FACTOR_UNDER_40;
+
+			if(temperatures.curr_temperature > 30 && temperatures.aim_temperature < 40)
+				time_heat += (temperatures.aim_temperature - temperatures.curr_temperature) / FACTOR_UNDER_40;
+
+			if(temperatures.curr_temperature < 30 && temperatures.aim_temperature < 40)
+						time_heat += (temperatures.aim_temperature - 30) / FACTOR_UNDER_40;
+
+			if(temperatures.aim_temperature > 40)
+				time_heat += (temperatures.aim_temperature - 40) / FACTOR_ABOVE_40;
+
+			TIM6->ARR = 1000 * time_heat;
+			relay_on();
+			TIM6->CR1 |= TIM_CR1_CEN;
+
 			break;
 		case HEATING_DURING_TIME:
 			TIM6->CR1 |= TIM_CR1_CEN;

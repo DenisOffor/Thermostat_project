@@ -14,8 +14,9 @@
 
 #define AMOUNT_OF_PARCEL 4
 #define MAX_SIZE_OF_OUTPUT 7
-#define START_ROW_CURR_TEMP 92
-#define START_ROW_AIM_TEMP 162
+#define START_ROW_CURR_TEMP 50
+#define START_ROW_AIM_TEMP 120
+#define START_ROW_NTC_TEMP 190
 
 #define Number_for_CELSIUM 10
 #define Number_for_DOT 11
@@ -23,7 +24,8 @@
 
 typedef enum TYPE_OF_TEMPERATURE {
 	CURRENT_TEMP = 0,
-	AIM_TEMP
+	AIM_TEMP,
+	NTC_TEMP,
 } TYPE_OF_TEMPERATURE;
 
 typedef struct Symbol_Distribution

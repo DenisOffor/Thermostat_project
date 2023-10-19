@@ -19,6 +19,7 @@ void init_periphery() {
 	TFT_init();
 	TFT_reset_temperature();
 	init_USART();
+	ADC_init();
 	display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
 	display_temperature(temperatures.curr_temperature, AIM_TEMP);
 }
@@ -66,11 +67,10 @@ void check_UART_cmd() {
 
 			if(temperatures.aim_temperature > temperatures.curr_temperature)
 				regulate_status = HEATING;
-			if(temperatures.aim_temperature > temperatures.curr_temperature)
+			if(temperatures.aim_temperature < temperatures.curr_temperature)
 				regulate_status = COOLING;
 
 			UART_rx_buf[0] = 0;
-			UART_rx_buf[1] = 0;
 			break;
 		case 0x31:
 			regulate_status = HEATING_DURING_TIME;

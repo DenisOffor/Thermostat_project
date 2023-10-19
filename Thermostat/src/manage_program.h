@@ -12,6 +12,7 @@
 #include "ds18b20.h"
 #include "init_TEC_throght_relay.h"
 #include "UART_for_PC.h"
+#include "NTC_10k_using_ADC.h"
 
 void init_clock();
 void process_cmd();
