@@ -23,5 +23,4 @@ void init_GPIO_for_USART();
 void init_USART();
 void init_DMA_for_USART();
 
-
 #endif /* UART_FOR_PC_H_ */

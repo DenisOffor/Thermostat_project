@@ -25,7 +25,7 @@ void TFT_display_normal_mode();
 void TFT_display_on();
 void TFT_pixel_format();
 void TFT_clearAllDisplay(uint8_t red, uint8_t green, uint8_t blue);
-void TFT_clearPartDisplay(uint8_t red, uint8_t green, uint8_t blue);
+void TFT_clearPartDisplay(uint8_t red, uint8_t green, uint8_t blue, uint8_t row_start, uint8_t row_end);
 void TFT_set_region(uint8_t data, uint16_t row_start, uint16_t row_end, uint16_t col_start, uint16_t col_end);
 void TFT_colorise(uint8_t red, uint8_t green, uint8_t blue);
 void TFT_ram_write();

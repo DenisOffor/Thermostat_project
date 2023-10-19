@@ -124,6 +124,5 @@ void temprepature_measurment_read() {
 	temp = ds_buff[1];
 	temp = temp << 8;
 	temp |= ds_buff[0];
-	temperature = temp * 0.0625;
-	program_task = TEMPERATURE_DISPLAYING;
+	temperatures.curr_temperature = temp * 0.0625;
 }

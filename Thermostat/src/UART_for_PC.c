@@ -20,8 +20,9 @@ void DMA1_Channel4_5_IRQHandler(void) {
 void init_GPIO_for_USART() {
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
 	//IO - AF
+	PORT_USART->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR9 | GPIO_OSPEEDER_OSPEEDR10;
 	PORT_USART->MODER |= GPIO_USART_TX | GPIO_USART_RX;
-	//AF1 on PA9(UART_TX) and PA10(UART_RX
+	//AF1 on PA9(UART_TX) and PA10(UART_RX)
 	PORT_USART->AFR[1] |= (1 << GPIO_AFRH_AFRH1_Pos) | (1 << GPIO_AFRH_AFRH2_Pos);
 }
 
@@ -45,7 +46,7 @@ void init_DMA_for_USART() {
 
 	//USART TX channel - 4
 	DMA1_Channel4->CCR |= DMA_CCR_DIR | DMA_CCR_MINC;
-	DMA1_Channel4->CMAR = (uint32_t)(&temperature);
+	DMA1_Channel4->CMAR = (uint32_t)(&temperatures.curr_temperature);
 	DMA1_Channel4->CPAR = (uint32_t)(&(USART->TDR));
 	DMA1_Channel4->CCR |= DMA_CCR_TCIE;
 	DMA1_Channel4->CNDTR = 0;
@@ -61,5 +62,4 @@ void init_DMA_for_USART() {
 	NVIC_SetPriority(DMA1_Channel4_5_IRQn, 3);
 
 	DMA1_Channel5->CCR |= DMA_CCR_EN;
-
 }

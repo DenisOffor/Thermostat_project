@@ -18,8 +18,7 @@ void TFT_init() {
   TFT_display_normal_mode();
   TFT_display_on();
   TFT_pixel_format();
-  TFT_clearAllDisplay(0x00, 0x00, 0x00);	//purple
-  for(int i = 0; i < 80000; i++);
+  TFT_clearAllDisplay(0x00, 0x00, 0x00);
 }
 
 void TFT_reset() {
@@ -80,12 +79,14 @@ void TFT_clearAllDisplay(uint8_t red, uint8_t green, uint8_t blue) {
 
 		for (int i = 0; i < 20000; i++);
 	}
+
+	  for(int i = 0; i < 80000; i++);
 }
 
-void TFT_clearPartDisplay(uint8_t red, uint8_t green, uint8_t blue) {
-	TFT_set_region(0x00, 128, 192, 0, 240);
+void TFT_clearPartDisplay(uint8_t red, uint8_t green, uint8_t blue, uint8_t row_start, uint8_t row_end) {
+	TFT_set_region(0x00, row_start, row_end, 0, 240);
 	TFT_colorise(red, green, blue);
-	for(int i = 0; i < 30000; i++);
+	for(int i = 0; i < 40000; i++);
 }
 
 
