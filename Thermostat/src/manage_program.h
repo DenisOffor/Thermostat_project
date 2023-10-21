@@ -15,7 +15,8 @@
 #include "NTC_10k_using_ADC.h"
 
 void init_clock();
-void process_cmd();
+void DS18B20_measure_temperature();
+void NTC_measurment();
 void init_periphery();
 void check_UART_cmd();
 

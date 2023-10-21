@@ -23,8 +23,8 @@ uint8_t cycle_start;
 #define C 0.000000065f
 
 void DMA1_Channel1_IRQHandler(void);
+void init_TIM15_as_TRGO();
 void ADC_init();
 void DMA_for_ADC_init();
-void NTC_measurment();
 
 #endif /* NTC_10K_USING_ADC_H_ */

@@ -10,7 +10,7 @@
 
 #include "TFT_display_temperature.h"
 
-Symbol_Distribution symbol_distribution;
+Symbols_Distribution symbols_distribution;
 uint8_t previous_full_width_curr_temp = 0;
 uint8_t previous_full_width_aim_temp = 0;
 
@@ -19,8 +19,8 @@ void display_temperature(double temperature, TYPE_OF_TEMPERATURE type_of_temp) {
 	Parse_temperature(&temperature);
 
 	uint8_t full_width = 0;
-	for(uint8_t i = 0; i < symbol_distribution.amout_of_symbols; i++)
-		full_width += symbol_distribution.custom_width[i];
+	for(uint8_t i = 0; i < symbols_distribution.amout_of_symbols; i++)
+		full_width += symbols_distribution.custom_width[i];
 
 	uint8_t start_row = 0;
 	switch(type_of_temp) {
@@ -41,9 +41,9 @@ void display_temperature(double temperature, TYPE_OF_TEMPERATURE type_of_temp) {
 
 	uint8_t start_col = (TFT_WIDTH - full_width) / 2;
 	//mirror output just for eliminate sending cmd to TFT
-	for(int i = symbol_distribution.amout_of_symbols - 1; i >= 0; i--) {
-		Choose_symbol_for_draw(symbol_distribution.char_output[i], start_row, start_col);
-		start_col += symbol_distribution.custom_width[i];
+	for(int i = symbols_distribution.amout_of_symbols - 1; i >= 0; i--) {
+		Choose_symbol_for_draw(symbols_distribution.char_output[i], start_row, start_col);
+		start_col += symbols_distribution.custom_width[i];
 		for(uint16_t i = 0; i < 1000; i++);
 	}
 
@@ -59,10 +59,10 @@ void display_temperature(double temperature, TYPE_OF_TEMPERATURE type_of_temp) {
 
 void Symbol_Distribution_clear () {
 	for(uint8_t i = 0; i < MAX_SIZE_OF_OUTPUT; i++)
-		symbol_distribution.char_output[i] = 0;
+		symbols_distribution.char_output[i] = 0;
 	for(uint8_t i = 0; i < MAX_SIZE_OF_OUTPUT; i++)
-		symbol_distribution.custom_width[i] = 0;
-	symbol_distribution.amout_of_symbols = 0;
+		symbols_distribution.custom_width[i] = 0;
+	symbols_distribution.amout_of_symbols = 0;
 }
 
 void Parse_temperature(double* temperature) {
@@ -109,8 +109,8 @@ void Parse_temperature(double* temperature) {
 }
 
 void Symbol_distribution_add_char(uint8_t width, uint8_t symbol) {
-	symbol_distribution.custom_width[symbol_distribution.amout_of_symbols] = width;
-	symbol_distribution.char_output[symbol_distribution.amout_of_symbols++] = symbol;
+	symbols_distribution.custom_width[symbols_distribution.amout_of_symbols] = width;
+	symbols_distribution.char_output[symbols_distribution.amout_of_symbols++] = symbol;
 }
 
 void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_row, uint8_t start_col) {

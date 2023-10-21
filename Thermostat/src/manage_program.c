@@ -14,17 +14,17 @@ void init_periphery() {
 	//	Write_data_to_flash(PAGE63_FOR_DOT_MINUS, &mat_for_symbol4[0], 256);
 
 	init_clock();
-	init_GPIO();
 	init_ds();
 	TFT_init();
 	TFT_reset_temperature();
 	init_USART();
+	init_GPIO();
 	ADC_init();
 	display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
 	display_temperature(temperatures.curr_temperature, AIM_TEMP);
 }
 
-void process_cmd() {
+void DS18B20_measure_temperature() {
 	switch(program_task) {
 		case START:
 			temperature_measurment_start();
@@ -36,47 +36,58 @@ void process_cmd() {
 			break;
 		case TEMPERATURE_DISPLAYING:
 			display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
-			DMA1_Channel4->CMAR = (uint32_t)(&symbol_distribution.char_output[0]);
-			DMA1_Channel4->CNDTR = symbol_distribution.amout_of_symbols - 1;
-			DMA1_Channel4->CCR |= DMA_CCR_EN;
-			while(DMA1_Channel4->CCR & DMA_CCR_EN);
+			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
 			program_task = START;
 			break;
 	}
 };
 
+void NTC_measurment() {
+	if(program_task == TURN_OFF)
+		return;
+	if(cycle_start == 1){
+		Ntc_R = ((NTC_UP_R)/((4095.0/ADC_Raw[0]) - 1));
+		double Ntc_Ln = log(Ntc_R);
+		Ntc_Tmp = (1.0/(A + B*Ntc_Ln + C*Ntc_Ln*Ntc_Ln*Ntc_Ln)) - 273.15;
+		display_temperature(Ntc_Tmp, NTC_TEMP);
+		UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, NTC_ADDRESS);
+		cycle_start = 0;
+	}
+}
+
 void check_UART_cmd() {
+	if(rx_data_state == DATA_WAITING)
+		return;
 	switch(UART_rx_buf[0]) {
-		case 0x10:
+		case UART_CMD_TURN_OFF:
 			program_task = TURN_OFF;
 			TFT_reset_temperature();
-			UART_rx_buf[0] = 0;
+			rx_data_state = DATA_WAITING;
 			break;
-		case 0x11:
+		case UART_CMD_TURN_ON:
 			program_task = START;
 			regulate_status = WAITING;
 			display_temperature(temperatures.aim_temperature, AIM_TEMP);
-			UART_rx_buf[0] = 0;
+			rx_data_state = DATA_WAITING;
 			break;
-		case 0x25:
-			for(int i = 0; i < 3000; i++);
+		case UART_CMD_SET_AIM_TEMP:
 			temperatures.aim_temperature = UART_rx_buf[1];
+
 			if(temperatures.aim_temperature > 120)
 				temperatures.aim_temperature = temperatures.aim_temperature - 256;
 			display_temperature(temperatures.aim_temperature, AIM_TEMP);
 
 			if(temperatures.aim_temperature > temperatures.curr_temperature)
 				regulate_status = HEATING;
-			if(temperatures.aim_temperature < temperatures.curr_temperature)
-				regulate_status = COOLING;
 
-			UART_rx_buf[0] = 0;
+			rx_data_state = DATA_WAITING;
 			break;
-		case 0x31:
+		case UART_CMD_HEAT_DURING:
 			regulate_status = HEATING_DURING_TIME;
 			//amount of second
 			TIM6->ARR = UART_rx_buf[1] * 1000;
-			UART_rx_buf[0] = 0;
+
+			rx_data_state = DATA_WAITING;
 			break;
 	}
 }

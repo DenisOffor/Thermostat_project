@@ -7,14 +7,23 @@
 
 #include "init_TEC_throght_relay.h"
 
+void TIM16_IRQHandler(void) {
+	TIM16->SR &= ~TIM_SR_UIF;
+	TIM16->CR1 &= ~TIM_CR1_CEN;
+	if(regulate_status == WAIT_TEMPERATURE_SET)
+		regulate_status = MAINTENANCE;
+}
+
 void TIM6_DAC_IRQHandler(void) {
 	TIM6->SR &= ~TIM_SR_UIF;
 	TIM6->CR1 &= ~TIM_CR1_CEN;
 	relay_off();
-	if(temperatures.aim_temperature == RESET_TEMPERATURE)
+	if(temperatures.aim_temperature == 255)
 		regulate_status = WAITING;
-	else
-		regulate_status = MAINTENANCE;
+	if(regulate_status == PROCESS){
+		regulate_status = WAIT_TEMPERATURE_SET;
+		TIM16->CR1 |= TIM_CR1_CEN;
+	}
 }
 
 void Relay_regulating() {
@@ -29,33 +38,19 @@ void Relay_regulating() {
 			break;
 		case MAINTENANCE:
 			if(temperatures.curr_temperature < (temperatures.aim_temperature - 0.3)) {
-				TIM6->ARR = 1000 * 2;
+				TIM6->ARR = 1000 * 1;
 				relay_on();
 				TIM6->CR1 |= TIM_CR1_CEN;
+				regulate_status = PROCESS;
 			}
 			break;
 		case HEATING:
-			if(temperatures.curr_temperature < 30)
-				time_heat += (30 - temperatures.curr_temperature) / FACTOR_UNDER_30;
-
-			if(temperatures.curr_temperature > 30 && temperatures.aim_temperature > 40)
-				time_heat += (40 - temperatures.curr_temperature) / FACTOR_UNDER_40;
-
-			if(temperatures.curr_temperature < 30 && temperatures.aim_temperature > 40)
-				time_heat += (40 - 30) / FACTOR_UNDER_40;
-
-			if(temperatures.curr_temperature > 30 && temperatures.aim_temperature < 40)
-				time_heat += (temperatures.aim_temperature - temperatures.curr_temperature) / FACTOR_UNDER_40;
-
-			if(temperatures.curr_temperature < 30 && temperatures.aim_temperature < 40)
-						time_heat += (temperatures.aim_temperature - 30) / FACTOR_UNDER_40;
-
-			if(temperatures.aim_temperature > 40)
-				time_heat += (temperatures.aim_temperature - 40) / FACTOR_ABOVE_40;
+			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature) / 0.6;
 
 			TIM6->ARR = 1000 * time_heat;
 			relay_on();
 			TIM6->CR1 |= TIM_CR1_CEN;
+			regulate_status = PROCESS;
 
 			break;
 		case HEATING_DURING_TIME:
@@ -85,6 +80,7 @@ void init_GPIO() {
 	GPIOB->ODR &= ~GPIO_ODR_7;
 
 	init_TIM6_for_Regulate_Time();
+	init_TIM16_for_wait_temp_set();
 }
 
 void init_TIM6_for_Regulate_Time() {
@@ -98,4 +94,19 @@ void init_TIM6_for_Regulate_Time() {
 	NVIC_SetPriority(TIM6_DAC_IRQn, 1);
 
 	TIM6->CR1 |= TIM_CR1_CEN;
+}
+
+void init_TIM16_for_wait_temp_set() {
+	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
+
+	//3 sec
+	TIM16->PSC = 8000 * FREQ_MULTIPLIER_COEF;
+	TIM16->ARR = 5000;
+
+
+	TIM16->DIER |= TIM_DIER_UIE;
+	NVIC_EnableIRQ(TIM16_IRQn);
+	NVIC_SetPriority(TIM16_IRQn, 1);
+
+	TIM16->CR1 |= TIM_CR1_CEN;
 }

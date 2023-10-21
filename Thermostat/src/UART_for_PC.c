@@ -7,6 +7,8 @@
 
 #include "UART_for_PC.h"
 
+uint8_t rx_data_state = DATA_WAITING;
+
 void DMA1_Channel4_5_IRQHandler(void) {
 	if ((DMA1->ISR & DMA_ISR_TCIF4) == DMA_ISR_TCIF4) {
 		DMA1->IFCR |= DMA_IFCR_CTCIF4;
@@ -14,6 +16,7 @@ void DMA1_Channel4_5_IRQHandler(void) {
 	}
 	if ((DMA1->ISR & DMA_ISR_TCIF5) == DMA_ISR_TCIF5) {
 		DMA1->IFCR |= DMA_IFCR_CTCIF5;
+		rx_data_state = DATA_IN_BUF;
 	}
 }
 
@@ -46,7 +49,7 @@ void init_DMA_for_USART() {
 
 	//USART TX channel - 4
 	DMA1_Channel4->CCR |= DMA_CCR_DIR | DMA_CCR_MINC;
-	DMA1_Channel4->CMAR = (uint32_t)(&temperatures.curr_temperature);
+	DMA1_Channel4->CMAR = (uint32_t)(&UART_tx_buf[0]);
 	DMA1_Channel4->CPAR = (uint32_t)(&(USART->TDR));
 	DMA1_Channel4->CCR |= DMA_CCR_TCIE;
 	DMA1_Channel4->CNDTR = 0;
@@ -62,4 +65,17 @@ void init_DMA_for_USART() {
 	NVIC_SetPriority(DMA1_Channel4_5_IRQn, 3);
 
 	DMA1_Channel5->CCR |= DMA_CCR_EN;
+}
+
+void UART_send_temperature(uint8_t* char_output, uint8_t char__output_size, uint8_t address) {
+	UART_tx_buf[0] = START_BYTE;
+	UART_tx_buf[1] = address;
+	for(int i = 0; i < char__output_size; i++)
+		UART_tx_buf[i + 2] = char_output[i];
+	UART_tx_buf[2 + char__output_size] = END_BYTE;
+
+	DMA1_Channel4->CNDTR = char__output_size + 3;
+	DMA1_Channel4->CCR |= DMA_CCR_EN;
+	while(DMA1_Channel4->CCR & DMA_CCR_EN);
+	for(int i = 0; i < 300; i++);
 }

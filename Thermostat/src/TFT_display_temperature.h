@@ -28,14 +28,14 @@ typedef enum TYPE_OF_TEMPERATURE {
 	NTC_TEMP,
 } TYPE_OF_TEMPERATURE;
 
-typedef struct Symbol_Distribution
+typedef struct Symbols_Distribution
 {
 	uint8_t char_output[MAX_SIZE_OF_OUTPUT];
 	uint8_t custom_width[MAX_SIZE_OF_OUTPUT];
 	uint8_t amout_of_symbols;
-}Symbol_Distribution;
+}Symbols_Distribution;
 
-Symbol_Distribution symbol_distribution;
+Symbols_Distribution symbols_distribution;
 
 void display_temperature(double temperature, TYPE_OF_TEMPERATURE type_of_temp);
 void Symbol_Distribution_clear();

@@ -15,17 +15,6 @@ void DMA1_Channel1_IRQHandler(void) {
 	cycle_start = 1;
 }
 
-void NTC_measurment() {
-	if(cycle_start == 1){
-		Ntc_R = ((NTC_UP_R)/((4095.0/ADC_Raw[0]) - 1));
-		double Ntc_Ln = log(Ntc_R);
-		Ntc_Tmp = (1.0/(A + B*Ntc_Ln + C*Ntc_Ln*Ntc_Ln*Ntc_Ln)) - 273.15;
-		display_temperature(Ntc_Tmp, NTC_TEMP);
-		cycle_start = 0;
-	}
-}
-
-
 void ADC_init() {
 	//RCC on for GPIOA
 	RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
@@ -46,13 +35,13 @@ void ADC_init() {
 
 	//239.5 cycles
 	ADC1->SMPR |= ADC_SMPR_SMP;
-	//continuous mode
 	//PA0 select
 	ADC1->CHSELR |= ADC_CHSELR_CHSEL0;
-
-	ADC1->CFGR1 |= ADC_CFGR1_DMACFG | ADC_CFGR1_CONT;
-	//DMA en
-	ADC1->CFGR1 |= ADC_CFGR1_DMAEN | ADC_CFGR1_OVRMOD;
+	//select TRGO timer 15
+	ADC1->CFGR1 &= ~ADC_CFGR1_CONT;
+	ADC1->CFGR1 |= ADC_CFGR1_EXTEN_0 | ADC_CFGR1_DISCEN | ADC_CFGR1_EXTSEL_2;
+	//ADC DMA en
+	ADC1->CFGR1 |= ADC_CFGR1_DMACFG | ADC_CFGR1_DMAEN | ADC_CFGR1_OVRMOD;
 
 	DMA_for_ADC_init();
 
@@ -62,6 +51,17 @@ void ADC_init() {
 	while( (ADC1->ISR & ADC_ISR_ADRDY) != ADC_ISR_ADRDY);
 
 	ADC1->CR |= ADC_CR_ADSTART;
+}
+
+void init_TIM15_as_TRGO() {
+	RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;
+
+	TIM15->ARR = 8000;
+	TIM15->PSC = 1000 * FREQ_MULTIPLIER_COEF;
+
+	TIM15->CR2 |= TIM_CR2_MMS_1;
+
+	TIM15->CR1 |= TIM_CR1_CEN;
 }
 
 void DMA_for_ADC_init() {
