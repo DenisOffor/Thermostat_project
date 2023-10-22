@@ -10,8 +10,13 @@
 void TIM16_IRQHandler(void) {
 	TIM16->SR &= ~TIM_SR_UIF;
 	TIM16->CR1 &= ~TIM_CR1_CEN;
-	if(regulate_status == WAIT_TEMPERATURE_SET)
+	if(regulate_status == WAIT_TEMPERATURE_SET) {
+		if(temperatures.aim_temperature - temperatures.curr_temperature > 0.7) {
+			regulate_status = HEATING;
+			return;
+		}
 		regulate_status = MAINTENANCE;
+	}
 }
 
 void TIM6_DAC_IRQHandler(void) {
@@ -37,7 +42,7 @@ void Relay_regulating() {
 			relay_off();
 			break;
 		case MAINTENANCE:
-			if(temperatures.curr_temperature < (temperatures.aim_temperature - 0.3)) {
+			if(temperatures.curr_temperature < (temperatures.aim_temperature - (0.25-(temperatures.aim_temperature - 27)*0.008) )) {//0.25-(t-t)*0.008;
 				TIM6->ARR = 1000 * 1;
 				relay_on();
 				TIM6->CR1 |= TIM_CR1_CEN;
@@ -45,7 +50,7 @@ void Relay_regulating() {
 			}
 			break;
 		case HEATING:
-			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature) / 0.6;
+			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature) / (0.65 - (temperatures.aim_temperature - 27)*0.004); //0.65-(t-t)*0.004
 
 			TIM6->ARR = 1000 * time_heat;
 			relay_on();
@@ -99,9 +104,9 @@ void init_TIM6_for_Regulate_Time() {
 void init_TIM16_for_wait_temp_set() {
 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 
-	//3 sec
+	//10 sec
 	TIM16->PSC = 8000 * FREQ_MULTIPLIER_COEF;
-	TIM16->ARR = 5000;
+	TIM16->ARR = 9000;
 
 
 	TIM16->DIER |= TIM_DIER_UIE;

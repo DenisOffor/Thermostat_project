@@ -11,6 +11,6 @@ int main(void)
 		check_UART_cmd();
 		DS18B20_measure_temperature();
 		Relay_regulating();
-		NTC_measurment();
+		//NTC_measurment();
 	}
 }

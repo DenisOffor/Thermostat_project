@@ -35,6 +35,7 @@ void DS18B20_measure_temperature() {
 			program_task = TEMPERATURE_DISPLAYING;
 			break;
 		case TEMPERATURE_DISPLAYING:
+			TFT_clearPartDisplay(0x00, 0x00, 0x00, START_ROW_CURR_TEMP, START_ROW_CURR_TEMP + DIGIT_HEIGHT);
 			display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
 			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
 			program_task = START;
