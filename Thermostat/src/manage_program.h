@@ -16,9 +16,10 @@
 
 void init_clock();
 void DS18B20_measure_temperature();
-void NTC_measurment();
+void NTC_measure_temperature();
 void init_periphery();
 void check_UART_cmd();
+void reset_all_var();
 
 
 #endif /* MANAGE_PROGRAM_H_ */

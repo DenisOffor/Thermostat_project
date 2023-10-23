@@ -13,8 +13,7 @@ uint16_t temp;
 void TIM2_IRQHandler() {
 	TIM2->SR &= ~TIM_SR_UIF;
 	TIM2->CR1 &= ~TIM_CR1_CEN;
-	if(program_task == TEMPERATURE_CONVERTING)
-		program_task = TEMPERATURE_READING;
+	ds18b20_cmd = TEMPERATURE_READING;
 }
 
 void init_ds() {

@@ -25,33 +25,32 @@ typedef struct Temperatures {
 	int aim_temperature;
 } Temperatures;
 
-typedef enum PROGRAM_TASK{
-	TURN_OFF = 0,
-	START,
+typedef enum PROGRAM_STATUS {
+	STATUS_TURN_OFF,
+	STATUS_START,
+	STATUS_WAIT_ACTION,
+	STATUS_HEATING,
+	STATUS_MAINTENANCE
+} PROGRAM_STATUS;
+
+typedef enum DS18B20_CMD{
 	TEMPERATURE_CONVERTING,
 	TEMPERATURE_READING,
 	TEMPERATURE_DISPLAYING,
-} PROGRAM_TASK;
+} DS18B20_CMD;
 
 typedef enum REGULATE_STATUS{
 	WAITING,
 	MAINTENANCE,
 	HEATING,
 	HEATING_DURING_TIME,
-	COOLING,
-	COOLING_DURING_TIME,
 	PROCESS,
 	WAIT_TEMPERATURE_SET,
 } REGULATE_STATUS;
 
 Temperatures temperatures;
-PROGRAM_TASK program_task;
+DS18B20_CMD ds18b20_cmd;
 REGULATE_STATUS regulate_status;
-
-uint16_t color_mat[1024];
-uint8_t mat_for_symbol[FLASH_PAGE_SIZE];
-uint8_t buf_tx[BUFFER_SIZE];
-uint8_t UART_tx_buf[BUFFER_SIZE];
-uint8_t UART_rx_buf[2];
+PROGRAM_STATUS program_status;
 
 #endif /* CONSTANT_H_ */

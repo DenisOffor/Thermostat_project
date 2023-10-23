@@ -12,8 +12,22 @@ uint8_t cycle_start = 0;
 
 void DMA1_Channel1_IRQHandler(void) {
 	DMA1->IFCR |= DMA_IFCR_CTCIF1;
-	cycle_start = 1;
+	ADC_HAVE_DATA = 1;
 }
+
+double NTC_get_temperature() {
+	Ntc_R = ( (NTC_UP_R) / ( (4095.0 / ADC_value) - 1) );
+	double Ntc_Ln = log(Ntc_R);
+	Ntc_Tmp = (1.0/(A + B*Ntc_Ln + C*Ntc_Ln*Ntc_Ln*Ntc_Ln)) - 273.15;
+	ADC_HAVE_DATA = 0;
+	return Ntc_Tmp;
+}
+
+void NTC_init_periphery() {
+	ADC_init();
+	init_TIM15_as_TRGO();
+}
+
 
 void ADC_init() {
 	//RCC on for GPIOA
@@ -69,7 +83,7 @@ void DMA_for_ADC_init() {
 
 	DMA1_Channel1->CCR |= DMA_CCR_CIRC | DMA_CCR_PSIZE_0 | DMA_CCR_MSIZE_0;
 	DMA1_Channel1->CNDTR = 1;
-	DMA1_Channel1->CMAR = (uint32_t)(&ADC_Raw[0]);
+	DMA1_Channel1->CMAR = (uint32_t)(&ADC_value);
 	DMA1_Channel1->CPAR = (uint32_t)(&ADC1->DR);
 
 	DMA1_Channel1->CCR |= DMA_CCR_TCIE;

@@ -25,6 +25,8 @@
 #define UART_CMD_HEAT_DURING 0x31
 
 uint8_t rx_data_state;
+uint8_t UART_tx_buf[BUFFER_SIZE];
+uint8_t UART_rx_buf[2];
 
 #define USART USART1
 #define PORT_USART GPIOA

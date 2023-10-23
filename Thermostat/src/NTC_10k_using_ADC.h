@@ -10,12 +10,11 @@
 
 #include "constant.h"
 #include "math.h"
-#include "TFT_display_temperature.h"
 
-uint16_t ADC_Raw[1];
+uint16_t ADC_value;
 double Ntc_Tmp;
 uint16_t Ntc_R;
-uint8_t cycle_start;
+uint8_t ADC_HAVE_DATA;
 
 #define NTC_UP_R 10000.0f
 #define A 0.001111f
@@ -23,8 +22,11 @@ uint8_t cycle_start;
 #define C 0.000000065f
 
 void DMA1_Channel1_IRQHandler(void);
+void NTC_init_periphery();
+double NTC_get_temperature();
 void init_TIM15_as_TRGO();
 void ADC_init();
 void DMA_for_ADC_init();
+
 
 #endif /* NTC_10K_USING_ADC_H_ */

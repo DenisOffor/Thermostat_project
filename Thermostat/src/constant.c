@@ -7,16 +7,11 @@
 
 #include "constant.h"
 
-PROGRAM_TASK program_task = TURN_OFF;
+DS18B20_CMD ds18b20_cmd = TEMPERATURE_CONVERTING;
 REGULATE_STATUS regulate_status = WAITING;
-
+PROGRAM_STATUS program_status = STATUS_TURN_OFF;
 Temperatures temperatures;
 
-uint8_t UART_tx_buf[BUFFER_SIZE];
-uint8_t UART_rx_buf[2];
-uint8_t buf_tx[BUFFER_SIZE];
-uint16_t color_mat[1024];
-uint8_t mat_for_symbol[FLASH_PAGE_SIZE];
 
 //uint8_t mat_for_symbol1[1024] = { 0xFF, 0xFF, 0xFF, 0xFF,
 //		0xFF, 0xFF, 0xFF, 0xFF,
