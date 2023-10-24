@@ -7,6 +7,8 @@
 
 #include "init_TEC_throght_relay.h"
 
+Constants_Relay constants_relay;
+
 void TIM16_IRQHandler(void) {
 	TIM16->SR &= ~TIM_SR_UIF;
 	TIM16->CR1 &= ~TIM_CR1_CEN;
@@ -43,15 +45,18 @@ void Relay_regulating() {
 			relay_off();
 			break;
 		case MAINTENANCE:
-			if(temperatures.curr_temperature < (temperatures.aim_temperature - (0.25-(temperatures.aim_temperature - ROOM_TEMPERATURE)*MAINTENANCE_COEF) )) {
-				TIM6->ARR = 1000 * (1 + (temperatures.aim_temperature - ROOM_TEMPERATURE)*5*MAINTENANCE_COEF);
+			if(temperatures.curr_temperature < (temperatures.aim_temperature -
+						(constants_relay.delta - (temperatures.aim_temperature - constants_relay.room_temperature)*constants_relay.maintenance_coef) )) {
+
+				TIM6->ARR = 1000 * (1 + (temperatures.aim_temperature - constants_relay.room_temperature)*5*constants_relay.maintenance_coef);
 				relay_on();
 				TIM6->CR1 |= TIM_CR1_CEN;
 				regulate_status = PROCESS;
 			}
 			break;
 		case HEATING:
-			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature) / (0.65 - (temperatures.aim_temperature - ROOM_TEMPERATURE)*HEAT_COEF);
+			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature)
+					/ (constants_relay.heat_for_1sec - (temperatures.aim_temperature - constants_relay.room_temperature)*constants_relay.heat_coef);
 
 			TIM6_set_heat_time(time_heat);
 			relay_on();
@@ -119,4 +124,20 @@ void init_TIM16_for_wait_temp_set() {
 
 void TIM16_set_wait_time(double seconds) {
 	TIM16->ARR = 1000 * seconds;
+}
+
+void Constatns_Relay_clear() {
+	constants_relay.room_temperature = 0;
+	constants_relay.maintenance_coef = 0;
+	constants_relay.heat_coef = 0;
+	constants_relay.heat_for_1sec = 0;
+	constants_relay.delta = 0;
+}
+
+void Constants_Relay_set(double room_temperature, double maintenance_coef, double heat_coef, double heat_for_1sec, double delta) {
+	constants_relay.room_temperature = room_temperature;
+	constants_relay.maintenance_coef = maintenance_coef;
+	constants_relay.heat_coef = heat_coef;
+	constants_relay.heat_for_1sec = heat_for_1sec;
+	constants_relay.delta = delta;
 }

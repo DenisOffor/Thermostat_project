@@ -28,6 +28,7 @@ void DS18B20_measure_temperature() {
 	switch(ds18b20_cmd) {
 		case TEMPERATURE_CONVERTING:
 			temperature_measurment_start();
+			ds18b20_cmd = WAITING_1SEC;
 			break;
 		case TEMPERATURE_READING:
 			temprepature_measurment_read();
@@ -96,28 +97,18 @@ void reset_all_var() {
 }
 
 void init_clock() {
-	//if PLL is SYSCLK
 	if( (RCC->CFGR & RCC_CFGR_SWS) == RCC_CFGR_SWS_PLL) {
-		//switch on HSI
 		RCC->CFGR &= ~RCC_CFGR_SW;
-		//wait until HSI isn't SYSCLK
 		while( (RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_HSI);
 	}
 
-	//1.Disable the PLL by setting PLLON to 0.
 	RCC->CR &= ~RCC_CR_PLLON;
-	//2. Wait until PLLRDY is cleared. The PLL is now fully stopped.
 	while( (RCC->CR & RCC_CR_PLLRDY) != 0 );
-	//3. Change the desired parameter
 	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL10;
-	//4. Enable the PLL again by setting PLLON to 1.
 	RCC->CR |= RCC_CR_PLLON;
-	//5. Wait until PLLRDY is set.
 	while( (RCC->CR & RCC_CR_PLLRDY) != RCC_CR_PLLRDY);
 
-	//switch on PLL as SYSCLK
 	RCC->CFGR |= RCC_CFGR_SW_PLL;
-	//wait until PLL isn't SYSCLK
 	while( (RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
 	SystemCoreClockUpdate();
 }

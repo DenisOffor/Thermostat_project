@@ -8,11 +8,23 @@
 #ifndef INIT_TEC_THROGHT_RELAY_H_
 #define INIT_TEC_THROGHT_RELAY_H_
 
-#define MAINTENANCE_COEF 0.006f
-#define HEAT_COEF 0.006f
-#define ROOM_TEMPERATURE 27
-
 #include "constant.h"
+
+//#define MAINTENANCE_COEF 0.007f
+//#define HEAT_COEF 0.006f
+//#define ROOM_TEMPERATURE 27
+
+typedef struct Constants_Relay {
+	double room_temperature;
+	double maintenance_coef;
+	double heat_coef;
+	double heat_for_1sec;
+	double delta;
+}Constants_Relay;
+
+Constants_Relay constants_relay;
+void Constatns_Relay_clear();
+void Constants_Relay_set(double, double, double, double, double);
 
 void TIM16_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
