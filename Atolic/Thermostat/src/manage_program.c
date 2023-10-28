@@ -88,9 +88,9 @@ void check_UART_cmd() {
 			set_Pid_Coef((uint16_t)(UART_data_buf[0] | (UART_data_buf[1] << 8)) , (uint16_t)(UART_data_buf[2] | (UART_data_buf[3] << 8)),
 					(uint16_t)(UART_data_buf[4] | (UART_data_buf[5] << 8)));
 			break;
-		case UART_DRAW_GRAPH_ON_DISPLAY:
-			TFT_DRAW_GRAPH(&UART_data_buf[0]);
-			break;
+		//case UART_DRAW_GRAPH_ON_DISPLAY:
+			//TFT_DRAW_GRAPH(&UART_data_buf[0]);
+			//break;
 	}
 	rx_received_cmd = 0;
 	rx_data_state = UART_DATA_WAITING;

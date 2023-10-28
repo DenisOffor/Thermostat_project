@@ -197,27 +197,4 @@ void TFT_reset_temperature() {
 	display_temperature(temperatures.aim_temperature, AIM_TEMP);
 }
 
-void TFT_DRAW_GRAPH(uint8_t* buf) {
-	for(uint16_t i = 0; i < AMOUNT_OF_BYTE_ON_PAGES_44_55; i++) {
-		for(uint16_t j = 0; j < 8; j++) {
-			//take the bit from byte and, depending on 0 or 1 it is, write color in color_mat
-			if((buf[i] << j) & 0x80) {
-				color_mat[8*i + j] = 0x0000;
-				continue;
-			}
-			color_mat[8*i + j] = 0xFFFF;
-		}
-	}
-	TFT_set_region(0x00, 4*amount_of_got_parcel, 4*amount_of_got_parcel + 3, 0, TFT_WIDTH);
-	Set_DC_data();
-	SPI1_SendDataDMA(&color_mat[0], AMOUNT_OF_BYTE_ON_PAGES_44_55);
-	amount_of_got_parcel++;
-
-	if(amount_of_got_parcel == 10)
-		amount_of_got_parcel = 0;
-
-	//Write_data_to_flash(PAGE44 + amount_of_got_parcel * FLASH_PAGE_SIZE, buf, AMOUNT_OF_BYTE_ON_PAGES_44_55);
-	//amount_of_got_parcel++;
-}
-
 #endif /* TFT_DISPLAY_TEMPERATURE_C_ */
