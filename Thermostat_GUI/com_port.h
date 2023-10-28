@@ -6,21 +6,33 @@
 #include <QString>
 #include <QDebug>
 #include <assert.h>
+#include <QImage>
+#include <QPixmap>
+#include <QVector>
+#include <QElapsedTimer>
 
 #define START_BYTE 0x01
 #define END_BYTE 0x09
 #define DS18B20_ADDRESS 0x43
 #define NTC_ADDRESS 0x44
+#define PWM_ADDRESS 0x45
+
+#define CMD_TURN_OFF 0x10
+#define START 0x11
+#define CMD_SEND_AIM_TEMPERATURE 0x25
+#define CMD_SEND_HEAT_TIME 0x31
+#define UART_CMD_SET_PID_COEF 0x41
 
 class com_port : public QObject
 {
     Q_OBJECT
-private :
-    QSerialPort *this_port;
-
 public:
+    QSerialPort *this_port;
+    QByteArray Tx_parcel;
+    QElapsedTimer Timer;
     com_port();
     ~com_port();
+    void SendGraph(QPixmap pixmap);
 
     bool Open(const QString& name_port);
     void Close();
@@ -33,8 +45,7 @@ signals :
     void sig_TempertureInBuffer(const QByteArray& data, uint8_t sensor_number);
 public slots:
     void slot_GetData();
-    void slot_SendData(const char &cmd, const char& data, const int size);
-
+    void slot_SendData(const char &cmd, const uint8_t data[], const int size);
 };
 
 #endif // COM_PORT_H

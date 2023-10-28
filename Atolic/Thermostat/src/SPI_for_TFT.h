@@ -24,7 +24,7 @@
 #define PIN_RST 3
 
 uint16_t color_mat[1024];
-uint8_t mat_for_symbol[FLASH_PAGE_SIZE];
+uint8_t mat_for_symbol[1024];
 
 void DMA1_Channel2_3_IRQHandler();
 void init_GPIO_for_SPI();

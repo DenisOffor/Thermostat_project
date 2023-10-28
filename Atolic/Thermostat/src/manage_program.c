@@ -22,7 +22,9 @@ void init_periphery() {
 	init_USART();
 	init_periphery_relay_regulating();
 	NTC_init_periphery();
+	init_TIM3_for_PWM();
 	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
+	reset_all_var();
 }
 
 void DS18B20_measure_temperature() {
@@ -57,9 +59,9 @@ void NTC_measure_temperature() {
 }
 
 void check_UART_cmd() {
-	if(rx_data_state == DATA_WAITING)
+	if(rx_data_state == UART_DATA_WAITING || rx_data_state == UART_CMD_RECEIVED)
 		return;
-	switch(UART_rx_buf[0]) {
+	switch(rx_received_cmd) {
 		case UART_CMD_TURN_OFF:
 			program_status = STATUS_TURN_OFF;
 			reset_all_var();
@@ -69,20 +71,29 @@ void check_UART_cmd() {
 			reset_all_var();
 			break;
 		case UART_CMD_SET_AIM_TEMP:
-			temperatures.aim_temperature = UART_rx_buf[1];
+			temperatures.aim_temperature = UART_data_buf[0];
 			if(temperatures.aim_temperature > 120)
 				temperatures.aim_temperature = temperatures.aim_temperature - 256;
 			display_temperature(temperatures.aim_temperature, AIM_TEMP);
 			if(temperatures.aim_temperature > temperatures.curr_temperature)
-				regulate_status = HEATING;
+				TIM3->CR1 |= TIM_CR1_CEN;
+				//regulate_status = HEATING;
 			TIM16_set_wait_time(9.f);
 			break;
 		case UART_CMD_HEAT_DURING:
 			regulate_status = HEATING_DURING_TIME;
-			TIM6_set_heat_time(UART_rx_buf[1]);
+			TIM6_set_heat_time(UART_data_buf[0]);
+			break;
+		case UART_CMD_SET_PID_COEF:
+			set_Pid_Coef((uint16_t)(UART_data_buf[0] | (UART_data_buf[1] << 8)) , (uint16_t)(UART_data_buf[2] | (UART_data_buf[3] << 8)),
+					(uint16_t)(UART_data_buf[4] | (UART_data_buf[5] << 8)));
+			break;
+		case UART_DRAW_GRAPH_ON_DISPLAY:
+			TFT_DRAW_GRAPH(&UART_data_buf[0]);
 			break;
 	}
-	rx_data_state = DATA_WAITING;
+	rx_received_cmd = 0;
+	rx_data_state = UART_DATA_WAITING;
 }
 
 void Relay_regulating() {
@@ -122,8 +133,42 @@ void Relay_regulating() {
 	}
 }
 
+void PID_regulation() {
+	if(!(TIM3->CR1 & TIM_CR1_CEN))
+		return;
+
+    errorCurrent = temperatures.aim_temperature - temperatures.curr_temperature;
+
+    if ((((pid_coef.Ki * errorIntegral) <= PID_DUTY_CYCLE_MAX) && (errorCurrent >= 0)) ||
+        (((pid_coef.Ki * errorIntegral) >= PID_DUTY_CYCLE_MIN) && (errorCurrent < 0)))
+    {
+      errorIntegral += errorCurrent;
+    }
+
+    errorDifferential = (errorCurrent - errorPrevious);
+
+    pwmDutyCycle = pid_coef.Kp * errorCurrent + pid_coef.Ki * errorIntegral + pid_coef.Kd * errorDifferential;
+
+    if (pwmDutyCycle < PID_DUTY_CYCLE_MIN)
+    {
+      pwmDutyCycle = PID_DUTY_CYCLE_MIN;
+    }
+
+    if (pwmDutyCycle > PID_DUTY_CYCLE_MAX)
+    {
+      pwmDutyCycle = PID_DUTY_CYCLE_MAX;
+    }
+
+    errorPrevious = errorCurrent;
+
+    pid_state = PID_OFF;
+    uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
+	UART_send_temperature(&data[0], 2, PWM_ADDRESS);
+}
+
 void reset_all_var() {
 	TFT_reset_temperature();
+	TIM3->CR1 &= ~TIM_CR1_CEN;
 	ds18b20_cmd = TEMPERATURE_CONVERTING;
 	regulate_status = WAITING;
 }

@@ -10,7 +10,25 @@
 
 #include "stm32f0xx.h"
 
-#define FLASH_PAGE_SIZE 1024
+#define PAGE59 (uint32_t)0x0800DC00
+
+#define AMOUNT_OF_BYTE_ON_PAGES_44_55 960
+
+#define FLASH_PAGE_SIZE (uint32_t)0x00000400
+#define PAGE44 (uint32_t)0x0800B000 //page 44
+#define PAGE45 (uint32_t)0x0800B400 //page 45
+#define PAGE46 (uint32_t)0x0800B800 //page 46
+#define PAGE47 (uint32_t)0x0800BC00 //page 47
+
+#define PAGE48 (uint32_t)0x0800C000 //page 48
+#define PAGE49 (uint32_t)0x0800C400 //page 49
+#define PAGE50 (uint32_t)0x0800C800 //page 50
+#define PAGE51 (uint32_t)0x0800CC00 //page 51
+
+#define PAGE52 (uint32_t)0x0800D000 //page 52
+#define PAGE53 (uint32_t)0x0800D400 //page 53
+#define PAGE54 (uint32_t)0x0800D800 //page 54
+#define PAGE55 (uint32_t)0x0800DC00 //page 55
 
 #define PAGE60_FOR_0_1_2_3 (uint32_t)0x0800F000 //page 60
 #define PAGE60_0_POSITION 0

@@ -10,6 +10,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     MyGraph = new TemperatureGraph(ui->groupBox);
 
+    com_port *my_com_this;
+    my_com_this = new com_port;
+    my_com_this->Open("COM15");
+
+    connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_DisplayTemperatureValue);
+    connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_PlotGraph);
+    connect(this, &MainWindow::sig_WriteNewData, my_com_this, &com_port::slot_SendData);
+
     for(uint8_t i = 0; i < AMOUNT_OF_BTN; i++)
         clicke[i] = false;
     pause = false;
@@ -28,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->BtnPause->setIconSize(QSize(25,25));
 
     connect(ui->Dial_Temperature, &QDial::sliderReleased, this, &MainWindow::slot_QDialReleased);
-    connect(ui->Dial_Temperature, &QDial::valueChanged, this, &MainWindow::slot_DisplaySetPointTemperatureValue);
+   // connect(ui->Dial_Temperature, &QDial::valueChanged, this, &MainWindow::slot_DisplaySetPointTemperatureValue);
 
     connect(ui->TurnOnBtn, &QPushButton::clicked, this, &MainWindow::Slot_TurnOnBtn_clicked);
     connect(ui->BtnGraphicFeatures, &QPushButton::clicked, this, &MainWindow::Slot_BtnExpandGraphicFeatures_clicked);
@@ -37,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->BtnSaveAs, &QPushButton::clicked, this, &MainWindow::Slot_SaveGraphAs);
     connect(ui->BtnPause, &QPushButton::clicked, this, &MainWindow::Slot_PauseGraph);
     connect(ui->BtnStartHeat, &QPushButton::clicked, this, &MainWindow::Slot_HeatDuring);
+    connect(ui->BtnPidCoefSend, &QPushButton::clicked, this, &MainWindow::Slot_SendPidCoef);
+    connect(ui->BtnDisplayGraphOnMC, &QPushButton::clicked, this, &MainWindow::Slot_DisplayGraphOnMC);
 
     connect(ui->CB_TuneAuto, &QCheckBox::stateChanged, this, &MainWindow::Slot_CB_AutoPushed);
     connect(ui->CB_TuneManual, &QCheckBox::stateChanged, this, &MainWindow::Slot_CB_ManualPushed);
@@ -52,7 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    emit sig_WriteNewTemperature(CMD_TURN_OFF, 0x00, STANDART_SIZE_OF_PARCAL*sizeof(uint8_t));
+    emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
     event->accept();
 }
 
@@ -79,9 +89,9 @@ void MainWindow::slot_DisplaySetPointTemperatureValue() {
     ui->SetPointTemperatureValueText->setText(StrTempepature + "°C");
         ui->ValueTargetTempLabel->setText(StrTempepature + "°C");
 
-        const uint8_t temperature = StrTempepature.toInt();
+    const uint8_t temperature = StrTempepature.toInt();
     qDebug() << "Temperature: " << temperature << "Time: " << GetTickCount();
-    emit sig_WriteNewTemperature(CMD_SEND_AIM_TEMPERATURE, temperature, STANDART_SIZE_OF_PARCAL*sizeof(uint8_t));
+    emit sig_WriteNewData(CMD_SEND_AIM_TEMPERATURE, &temperature, sizeof(uint8_t));
 }
 
 void MainWindow::slot_QDialReleased() {
@@ -89,16 +99,22 @@ void MainWindow::slot_QDialReleased() {
     ui->CurrTempLabel->show();
     ui->SetPointTemperatureValueText->hide();
     ui->SetTempLabel->hide();
+
+    QString StrTempepature = QString::number(ui->Dial_Temperature->value());
+    ui->SetPointTemperatureValueText->setText(StrTempepature + "°C");
+        ui->ValueTargetTempLabel->setText(StrTempepature + "°C");
+
+        const uint8_t temperature = StrTempepature.toInt();
+    qDebug() << "Temperature: " << temperature << "Time: " << GetTickCount();
+    emit sig_WriteNewData(CMD_SEND_AIM_TEMPERATURE, &temperature, sizeof(uint8_t));
 }
 
 void MainWindow::slot_DisplayTemperatureValue(const QByteArray& data, uint8_t sensor_number)
 {
-    // if(MyGraph->CheckTemperatureCorrectness(data)) {
     if (sensor_number == 0) {
         QString StrTempepature = QString(data);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
-    // }
 }
 
 void MainWindow::Slot_ClearGraph() {
@@ -178,7 +194,7 @@ void MainWindow::Slot_TurnOnBtn_clicked()
         clicke[BTN_TURNON] = !clicke[BTN_TURNON];
         ui->Dial_Temperature->setEnabled(true);
         emit ui->BtnClearGraph->clicked();
-        emit sig_WriteNewTemperature(START, 0x00, STANDART_SIZE_OF_PARCAL*sizeof(uint8_t));
+        emit sig_WriteNewData(START, 0x00, 0);
     }
     else
     {
@@ -204,7 +220,7 @@ void MainWindow::Slot_TurnOnBtn_clicked()
         ui->Dial_Temperature->setEnabled(false);
         if(pause == true)
             emit ui->BtnPause->clicked();
-        emit sig_WriteNewTemperature(CMD_TURN_OFF, 0x00, STANDART_SIZE_OF_PARCAL*sizeof(uint8_t));
+        emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
         clicke[BTN_TURNON] = !clicke[BTN_TURNON];
     }
 }
@@ -378,11 +394,29 @@ void MainWindow::Slot_HeatDuring() {
     if(clicke[BTN_TURNON] == false)
         return;
 
-    int time = ui->HeatTimeLineEdit->text().toInt();
+    uint8_t time = ui->HeatTimeLineEdit->text().toInt();
     if(time <= 0 || time > 60)
         return;
 
-    emit sig_WriteNewTemperature(CMD_SEND_HEAT_TIME, time, STANDART_SIZE_OF_PARCAL*sizeof(uint8_t));
+    emit sig_WriteNewData(CMD_SEND_HEAT_TIME, &time, sizeof(uint8_t));
+}
+
+void MainWindow::Slot_SendPidCoef() {
+    if(ui->PidKpLineEdit->text() == NULL || ui->PidKiLineEdit->text() == NULL || ui->PidKdLineEdit->text() == NULL)
+        QMessageBox::warning(this,"Ошибка!", "Введите все коэффициенты");
+
+    uint16_t data[3];
+    data[0] = ui->PidKpLineEdit->text().toUInt();
+    data[1] = ui->PidKiLineEdit->text().toUInt();
+    data[2] = ui->PidKdLineEdit->text().toUInt();
+
+    uint8_t parcel[3*sizeof(uint16_t)];
+    for(int i = 0; i < 3; i++) {
+        parcel[i*sizeof(uint16_t)] = (data[i] & 0xFF);
+        parcel[i*sizeof(uint16_t) + 1] = ((data[i] >> 8) & 0xFF);
+    }
+
+    emit sig_WriteNewData(UART_CMD_SET_PID_COEF, parcel, 3*sizeof(uint16_t));
 }
 
 void MainWindow::ShiftWidgets(int shift) {
@@ -392,3 +426,31 @@ void MainWindow::ShiftWidgets(int shift) {
         childWidget->move(currentPos.x() + shift, currentPos.y());
     }
 }
+
+void MainWindow::Slot_DisplayGraphOnMC() {
+    QLinearGradient gradient(0, 0, 0, 400);
+    gradient.setColorAt(0, QColor(255, 255, 255));
+    gradient.setColorAt(0.38, QColor(255, 255, 255));
+    gradient.setColorAt(1, QColor(255, 255, 255));
+    MyGraph->GetPlot()->setBackground(QBrush(gradient));
+
+    QPixmap pixmap = MyGraph->GetPlot()->toPixmap(320, 240);
+    gradient.setColorAt(0, QColor(128, 128, 128));
+    gradient.setColorAt(0.38, QColor(128, 128, 128));
+    gradient.setColorAt(1, QColor(128, 128, 128));
+    MyGraph->GetPlot()->setBackground(QBrush(gradient));
+
+    my_com_this->SendGraph(pixmap);
+}
+
+
+
+
+
+
+
+
+
+
+
+

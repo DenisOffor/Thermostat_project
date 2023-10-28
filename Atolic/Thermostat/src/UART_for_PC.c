@@ -7,7 +7,10 @@
 
 #include "UART_for_PC.h"
 
-uint8_t rx_data_state = DATA_WAITING;
+uint8_t rx_data_state = UART_DATA_WAITING;
+uint8_t rx_received_cmd = 0;
+uint16_t size_of_parcel = 0;
+
 
 void DMA1_Channel4_5_IRQHandler(void) {
 	if ((DMA1->ISR & DMA_ISR_TCIF4) == DMA_ISR_TCIF4) {
@@ -16,7 +19,24 @@ void DMA1_Channel4_5_IRQHandler(void) {
 	}
 	if ((DMA1->ISR & DMA_ISR_TCIF5) == DMA_ISR_TCIF5) {
 		DMA1->IFCR |= DMA_IFCR_CTCIF5;
-		rx_data_state = DATA_IN_BUF;
+
+		if(UART_data_buf[0] == START_BYTE && rx_data_state == UART_DATA_WAITING) {
+			rx_received_cmd = UART_data_buf[1];
+			DMA1_Channel5->CCR &= ~DMA_CCR_EN;
+			//amount of data and end byte
+			size_of_parcel = (UART_data_buf[2] | (UART_data_buf[3] << 8)) + 1;
+			DMA1_Channel5->CNDTR = size_of_parcel;
+			DMA1_Channel5->CCR |= DMA_CCR_EN;
+			rx_data_state = UART_CMD_RECEIVED;
+			return;
+		}
+
+		if(UART_data_buf[size_of_parcel - 1] == END_BYTE) {
+			DMA1_Channel5->CCR &= ~DMA_CCR_EN;
+			DMA1_Channel5->CNDTR = 4;
+			DMA1_Channel5->CCR |= DMA_CCR_EN;
+			rx_data_state = UART_DATA_IN_BUF;
+		}
 	}
 }
 
@@ -57,9 +77,9 @@ void init_DMA_for_USART() {
 	//USART RX channel - 5
 	DMA1_Channel5->CCR &= ~DMA_CCR_DIR;
 	DMA1_Channel5->CCR |= DMA_CCR_MINC | DMA_CCR_CIRC;
-	DMA1_Channel5->CMAR = (uint32_t)(&(UART_rx_buf[0]));
+	DMA1_Channel5->CMAR = (uint32_t)(&(UART_data_buf[0]));
 	DMA1_Channel5->CPAR = (uint32_t)(&(USART->RDR));
-	DMA1_Channel5->CNDTR = 2;
+	DMA1_Channel5->CNDTR = 4;
 	DMA1_Channel5->CCR |= DMA_CCR_TCIE;
 	NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
 	NVIC_SetPriority(DMA1_Channel4_5_IRQn, 3);

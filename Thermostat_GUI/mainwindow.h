@@ -8,12 +8,7 @@
 #include <QTableWidgetItem>
 #include <QDebug>
 #include "temperaturegraph.h"
-
-#define STANDART_SIZE_OF_PARCAL 2
-#define CMD_TURN_OFF 0x10
-#define START 0x11
-#define CMD_SEND_AIM_TEMPERATURE 0x25
-#define CMD_SEND_HEAT_TIME 0x31
+#include "com_port.h"
 
 #define AMOUNT_OF_BTN 3
 #define BTN_TURNON 0
@@ -35,6 +30,7 @@ public:
 
 private:
     TemperatureGraph* MyGraph;
+    com_port *my_com_this;
     Ui::MainWindow *ui;
     //bool for buttoms push check
     bool clicke[AMOUNT_OF_BTN];
@@ -46,7 +42,7 @@ public slots:
     void slot_DisplayTemperatureValue(const QByteArray& data, uint8_t sensor_number);
     void slot_PlotGraph(const QByteArray& data, uint8_t sensor_number);
 signals :
-    void sig_WriteNewTemperature(const uint8_t& cmd,const uint8_t& data, const int size);
+    void sig_WriteNewData(const uint8_t& cmd,const uint8_t data[], const int size);
 
 private slots:
     void slot_DisplaySetPointTemperatureValue();
@@ -63,5 +59,7 @@ private slots:
     void Slot_ClearGraph();
     void Slot_PauseGraph();
     void Slot_HeatDuring();
+    void Slot_SendPidCoef();
+    void Slot_DisplayGraphOnMC();
 };
 #endif // MAINWINDOW_H

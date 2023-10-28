@@ -25,11 +25,11 @@ typedef enum REGULATE_STATUS{
 REGULATE_STATUS regulate_status;
 
 typedef struct Constants_Relay {
-	double room_temperature;
-	double maintenance_coef;
-	double heat_coef;
-	double heat_for_1sec;
-	double delta;
+	float room_temperature;
+	float maintenance_coef;
+	float heat_coef;
+	float heat_for_1sec;
+	float delta;
 }Constants_Relay;
 
 Constants_Relay constants_relay;

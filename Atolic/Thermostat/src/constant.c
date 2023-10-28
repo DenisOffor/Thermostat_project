@@ -9,6 +9,7 @@
 
 Temperatures temperatures;
 
+uint8_t pid_state = PID_OFF;
 
 //uint8_t mat_for_symbol1[1024] = { 0xFF, 0xFF, 0xFF, 0xFF,
 //		0xFF, 0xFF, 0xFF, 0xFF,

@@ -22,6 +22,10 @@
 #define Number_for_DOT 11
 #define Number_for_MINUS 12
 
+#define AMOUNT_OF_PARCEL_FOR_GRAPH 10
+uint8_t amount_of_got_parcel = 0;
+
+
 typedef enum TYPE_OF_TEMPERATURE {
 	CURRENT_TEMP = 0,
 	AIM_TEMP,
@@ -45,5 +49,7 @@ void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_row, uint8_t start_col
 void TFT_draw_symbol(uint16_t start_position_in_arr, uint16_t end_position_in_arr, uint8_t symbol_width,
 		uint8_t symbol_height, uint8_t start_row, uint8_t start_col);
 void TFT_reset_temperature();
+
+void TFT_DRAW_GRAPH(uint8_t* buf);
 
 #endif /* TFT_DISPLAY_TEMPERATURE_H_ */

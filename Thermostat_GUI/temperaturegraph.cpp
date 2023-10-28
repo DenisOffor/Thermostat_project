@@ -5,7 +5,7 @@ TemperatureGraph::TemperatureGraph(QGroupBox* groupBox)
 {
     plot = new QCustomPlot(groupBox);
     AddGraph(QColor(0,0,0), 0);
-    AddGraph(QColor(0,0,255), 1);
+    AddGraph(QColor(20,100,20), 1);
     plot->setObjectName(QString::fromUtf8("Graph"));
     plot->setGeometry(QRect(1210, 60, 591, 441));
     plot->setStyleSheet(QString::fromUtf8("background-color: rgb(128,128,128);"));
@@ -59,28 +59,21 @@ void TemperatureGraph::SaveGraphAs() {
 
     QString filename = QFileDialog::getSaveFileName();
 
-    if( filename == "" ){
-        gradient.setColorAt(0, QColor(128, 128, 128));
-        gradient.setColorAt(0.38, QColor(128, 128, 128));
-        gradient.setColorAt(1, QColor(128, 128, 128));
-        plot->setBackground(QBrush(gradient));
-    }
-
     if( filename.endsWith(".png") ){
-        plot->savePng( filename, plot->width(), plot->height() );
+        plot->savePng(filename, plot->width(), plot->height() );
     }
     if( filename.endsWith(".jpg") ){
-        plot->saveJpg( filename, plot->width(), plot->height() );
+        plot->saveJpg(filename, plot->width(), plot->height() );
     }
     if( filename.endsWith(".jpeg") ){
-        plot->saveJpg( filename, plot->width(), plot->height() );
+        plot->saveJpg(filename, plot->width(), plot->height() );
     }
     if( filename.endsWith(".pdf") ){
-        plot->savePdf( filename, plot->width(), plot->height() );
+        plot->savePdf(filename, plot->width(), plot->height() );
     }
 
     //If we get this far then save as a png
-    plot->savePng( filename, plot->width(), plot->height() );
+    plot->savePng(filename, plot->width(), plot->height());
 
     gradient.setColorAt(0, QColor(128, 128, 128));
     gradient.setColorAt(0.38, QColor(128, 128, 128));
@@ -100,6 +93,7 @@ void TemperatureGraph::AddGraph(QColor color, uint8_t sensor_number) {
     YRange.first = 0;
     YRange.second = 5;
 
+
     plot->xAxis->setRange(XRange.first, XRange.second);
     plot->yAxis->setRange(YRange.first, YRange.second);
 }
@@ -113,7 +107,7 @@ void TemperatureGraph::ClearGraphs() {
     start_time = 0;
     plot->clearGraphs();
     AddGraph(QColor(0,0,0), 0);
-    AddGraph(QColor(0,0,255), 1);
+    AddGraph(QColor(20,100,20), 1);
     plot->replot();
 }
 

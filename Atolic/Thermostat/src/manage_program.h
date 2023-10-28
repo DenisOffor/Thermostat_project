@@ -25,6 +25,7 @@ typedef enum PROGRAM_STATUS {
 
 PROGRAM_STATUS program_status;
 
+void PID_regulation();
 void init_clock();
 void DS18B20_measure_temperature();
 void NTC_measure_temperature();

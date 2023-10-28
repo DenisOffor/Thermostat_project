@@ -10,23 +10,30 @@
 
 #include "constant.h"
 
-#define DATA_WAITING 0
-#define DATA_IN_BUF 1
+#define UART_DATA_WAITING 0
+#define UART_CMD_RECEIVED 1
+#define UART_DATA_IN_BUF 2
 
 #define START_BYTE 0x01
 #define END_BYTE 0x09
 #define DS18B20_ADDRESS 0x43
 #define NTC_ADDRESS 0x44
-
+#define PWM_ADDRESS 0x45
 
 #define UART_CMD_TURN_OFF 0x10
 #define UART_CMD_TURN_ON 0x11
 #define UART_CMD_SET_AIM_TEMP 0x25
 #define UART_CMD_HEAT_DURING 0x31
+#define UART_CMD_SET_PID_COEF 0x41
+#define UART_DRAW_GRAPH_ON_DISPLAY 0x43
+
 
 uint8_t rx_data_state;
-uint8_t UART_tx_buf[BUFFER_SIZE];
-uint8_t UART_rx_buf[2];
+uint8_t rx_received_cmd;
+uint16_t size_of_parcel;
+
+uint8_t UART_tx_buf[24];
+uint8_t UART_data_buf[1000];
 
 #define USART USART1
 #define PORT_USART GPIOA

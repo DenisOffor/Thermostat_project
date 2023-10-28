@@ -926,7 +926,7 @@
      <set>Qt::AlignCenter</set>
     </property>
     <property name="flat">
-     <bool>true</bool>
+     <bool>false</bool>
     </property>
     <widget class="QLabel" name="TemperatureValueText">
      <property name="geometry">
@@ -1949,7 +1949,7 @@ color: rgb(255,255,255);</string>
       <rect>
        <x>821</x>
        <y>310</y>
-       <width>140</width>
+       <width>164</width>
        <height>31</height>
       </rect>
      </property>
@@ -1961,7 +1961,7 @@ color: rgb(255,255,255);</string>
      </property>
      <property name="minimumSize">
       <size>
-       <width>140</width>
+       <width>164</width>
        <height>0</height>
       </size>
      </property>
@@ -11306,7 +11306,7 @@ border-color: rgb(105,105,105);
 color: white</string>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;_:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt; 	&amp;#x3B4;:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
     <widget class="QLineEdit" name="CoefTroomLineEdit">
@@ -11812,7 +11812,7 @@ border-color: rgb(105,105,105);
 color: white</string>
      </property>
      <property name="text">
-      <string>_:</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;t&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt;room&lt;/span&gt;:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -11825,16 +11825,16 @@ color: white</string>
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>93</y>
-       <width>277</width>
-       <height>71</height>
+       <y>90</y>
+       <width>381</width>
+       <height>41</height>
       </rect>
      </property>
      <property name="text">
-      <string/>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;τ&lt;/span&gt;&lt;span style=&quot; font-size:20pt; vertical-align:sub;&quot;&gt;нагрева &lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;= &lt;/span&gt;&lt;span style=&quot; font-size:20pt; vertical-align:super;&quot;&gt;(tуставки-t)&lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;⁄&lt;/span&gt;&lt;span style=&quot; font-size:20pt; vertical-align:sub;&quot;&gt;a-(tуставки-t)*b&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
-     <property name="pixmap">
-      <pixmap>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI/form1.png</pixmap>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -11843,74 +11843,17 @@ color: white</string>
     <widget class="QLabel" name="Formula2Label">
      <property name="geometry">
       <rect>
-       <x>290</x>
-       <y>100</y>
-       <width>275</width>
-       <height>30</height>
+       <x>10</x>
+       <y>120</y>
+       <width>361</width>
+       <height>51</height>
       </rect>
      </property>
      <property name="text">
-      <string/>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:19pt;&quot;&gt;τ&lt;/span&gt;&lt;span style=&quot; font-size:19pt; vertical-align:sub;&quot;&gt;поддержания&lt;/span&gt;&lt;span style=&quot; font-size:19pt;&quot;&gt;= 1 + (t&lt;/span&gt;&lt;span style=&quot; font-size:19pt; vertical-align:sub;&quot;&gt;уставки &lt;/span&gt;&lt;span style=&quot; font-size:19pt;&quot;&gt;- t)*c&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
-     <property name="pixmap">
-      <pixmap>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI/form2.png</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="Formula3Label">
-     <property name="geometry">
-      <rect>
-       <x>360</x>
-       <y>137</y>
-       <width>123</width>
-       <height>26</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI/form3.jpg</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="DeltaLabel">
-     <property name="geometry">
-      <rect>
-       <x>333</x>
-       <y>56</y>
-       <width>15</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI/form4.jpg</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QLabel" name="TempRoomLabel">
-     <property name="geometry">
-      <rect>
-       <x>434</x>
-       <y>54</y>
-       <width>53</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI/form5.jpg</pixmap>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
@@ -13919,10 +13862,10 @@ border-color: rgb(105,105,105);
 color: white</string>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Kp:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ki:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="RelayCoefSend">
+    <widget class="QPushButton" name="BtnRelayCoefSend">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -13986,7 +13929,7 @@ color: white
       <string>Send</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="PidCoefSend">
+    <widget class="QPushButton" name="BtnPidCoefSend">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -14544,7 +14487,7 @@ color: rgb(255,255,255);</string>
        <x>2</x>
        <y>390</y>
        <width>595</width>
-       <height>345</height>
+       <height>350</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -14566,7 +14509,7 @@ color: white</string>
        <x>609</x>
        <y>4</y>
        <width>565</width>
-       <height>731</height>
+       <height>736</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -14588,7 +14531,7 @@ color: white</string>
        <x>1191</x>
        <y>4</y>
        <width>619</width>
-       <height>731</height>
+       <height>736</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -14604,11 +14547,98 @@ color: white</string>
       <string/>
      </property>
     </widget>
+    <widget class="QLabel" name="Formula1Label_2">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>90</y>
+       <width>191</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;t &amp;lt; t&lt;/span&gt;&lt;span style=&quot; font-size:20pt; vertical-align:sub;&quot;&gt;уставки &lt;/span&gt;&lt;span style=&quot; font-size:20pt;&quot;&gt;- δ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="BtnDisplayGraphOnMC">
+     <property name="geometry">
+      <rect>
+       <x>1400</x>
+       <y>10</y>
+       <width>51</width>
+       <height>51</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Frank Ruehl CLM</family>
+       <pointsize>26</pointsize>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+background-color: rgb(115,115,115);
+border-style: outset;
+border-width: 3px;
+border-radius: 13px;
+border-color: rgb(105,105,105);
+color: white
+}
+
+QPushButton::hover{
+background-color: rgb(115,115,115);
+border-style: outset;
+border-width: 5px;
+border-radius: 14px;
+border-color: rgb(105,105,105);
+color: white
+}
+
+QPushButton::pressed{
+background-color: rgb(90,90,90);
+border-style: outset;
+border-width: 5px;
+border-radius: 13px;
+border-color: rgb(100,100,100);
+color: white
+}</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset theme="document-save">
+       <normaloff>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI</normaloff>../../Qt_projects/Thermostat_GUI_QT/Thermostat_GUI</iconset>
+     </property>
+    </widget>
+    <zorder>label</zorder>
     <zorder>label_5</zorder>
     <zorder>label_4</zorder>
     <zorder>label_3</zorder>
     <zorder>label_2</zorder>
-    <zorder>label</zorder>
     <zorder>XminLabel_8</zorder>
     <zorder>Dial_Temperature</zorder>
     <zorder>TemperatureValueText</zorder>
@@ -14660,9 +14690,6 @@ color: white</string>
     <zorder>TempRoomLabel2</zorder>
     <zorder>Formula1Label</zorder>
     <zorder>Formula2Label</zorder>
-    <zorder>Formula3Label</zorder>
-    <zorder>DeltaLabel</zorder>
-    <zorder>TempRoomLabel</zorder>
     <zorder>PidCoefLabel</zorder>
     <zorder>KpPibLabel</zorder>
     <zorder>PidKdLineEdit</zorder>
@@ -14670,9 +14697,11 @@ color: white</string>
     <zorder>PidKpLineEdit</zorder>
     <zorder>KdPibLabel</zorder>
     <zorder>KiPibLabel</zorder>
-    <zorder>RelayCoefSend</zorder>
-    <zorder>PidCoefSend</zorder>
+    <zorder>BtnRelayCoefSend</zorder>
+    <zorder>BtnPidCoefSend</zorder>
     <zorder>PidCoefLabel_2</zorder>
+    <zorder>Formula1Label_2</zorder>
+    <zorder>BtnDisplayGraphOnMC</zorder>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

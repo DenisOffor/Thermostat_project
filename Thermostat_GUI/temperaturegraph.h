@@ -8,8 +8,6 @@
 #include "qcustomplot.h"
 
 #define AMOUT_OF_GRAPH 2
-#define DS18B20_ADDRESS 0x43
-#define NTC_ADDRESS 0x24
 
 class TemperatureGraph
 {
