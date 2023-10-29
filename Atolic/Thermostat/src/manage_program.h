@@ -14,10 +14,11 @@
 #include "UART_for_PC.h"
 #include "NTC_10k_using_ADC.h"
 #include "PID_regulator.h"
-
 #define DISPLAY_TEMPERATURE 0
 #define DISPLAY_GRAPH 1
 uint8_t display_status;
+
+uint8_t send_temp_on_PC;
 
 typedef enum PROGRAM_STATUS {
 	STATUS_TURN_OFF,
@@ -51,5 +52,6 @@ void PID_regulation();
 
 void reset_all_var();
 
+void init_tim17_for_1sec();
 
 #endif /* MANAGE_PROGRAM_H_ */

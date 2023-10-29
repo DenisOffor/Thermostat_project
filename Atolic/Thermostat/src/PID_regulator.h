@@ -12,8 +12,8 @@
 
 #define PID_DUTY_CYCLE_MIN 0
 #define PID_DUTY_CYCLE_MAX 1000
-#define iMin -30 // ћинимальное значение интегратора
-#define iMax 30  // ћаксимальное значение интегратора
+#define iMin -15 // ћинимальное значение интегратора
+#define iMax 15  // ћаксимальное значение интегратора
 
 
 int pwmDutyCycle;

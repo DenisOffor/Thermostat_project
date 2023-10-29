@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->BtnClearGraph->setIconSize(QSize(25,25));
     ui->BtnPause->setIcon(ui->BtnSaveAs->style()->standardIcon(QStyle::SP_MediaPause));
     ui->BtnPause->setIconSize(QSize(25,25));
+    ui->BtnDisplayGraphOnMC->setIcon(ui->BtnSaveAs->style()->standardIcon(QStyle::SP_MessageBoxCritical));
+    ui->BtnPause->setIconSize(QSize(25, 25));
 
     connect(ui->Dial_Temperature, &QDial::sliderReleased, this, &MainWindow::slot_QDialReleased);
     connect(ui->Dial_Temperature, &QDial::valueChanged, this, &MainWindow::slot_DisplaySetPointTemperatureValue);

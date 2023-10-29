@@ -10,7 +10,13 @@
 PROGRAM_STATUS program_status = STATUS_TURN_OFF;
 uint8_t display_status = DISPLAY_TEMPERATURE;
 Sensors_State sensors_state;
+uint8_t send_temp_on_PC = 1;
 
+void TIM17_IRQHandler(void) {
+	TIM17->SR &= ~TIM_SR_UIF;
+	TIM17->CR1 &= ~TIM_CR1_CEN;
+	send_temp_on_PC = 1;
+}
 
 void init_periphery() {
 	//	Write_data_to_flash(PAGE60_FOR_0_1_2_3, &mat_for_symbol1[0], 1024);
@@ -28,7 +34,7 @@ void init_periphery() {
 	init_TIM3_for_PWM();
 
 	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
-
+	init_tim17_for_1sec();
 	reset_all_var();
 }
 
@@ -80,6 +86,7 @@ void check_UART_cmd() {
 			display_status = DISPLAY_GRAPH;
 			break;
 		case CMD_DRAW_TEMPERATURE:
+			TFT_clearAllDisplay(0x00,0x00,0x00);
 			display_status = DISPLAY_TEMPERATURE;
 			break;
 
@@ -110,18 +117,25 @@ void Measure_temperature() {
 void Display_data() {
 	if(program_status == STATUS_TURN_OFF)
 		return;
-	if(sensors_state.DS_as_add_sensor && temperatures.cur_temperature_DS != RESET_TEMPERATURE) {
-		//Symbol_Distribution_clear();
-		//Parse_temperature(&temperatures.cur_temperature_DS);
-		//UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
-	}
 
-	for(int i = 0; i < 50000; i++);
+	if(send_temp_on_PC == 1) {
+		if(sensors_state.DS_as_add_sensor && temperatures.cur_temperature_DS != RESET_TEMPERATURE) {
+			Symbol_Distribution_clear();
+			Parse_temperature(&temperatures.cur_temperature_DS);
+			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
+		}
 
-	if(sensors_state.NTC_as_add_sensor && temperatures.cur_temperature_NTC != RESET_TEMPERATURE) {
-		//Symbol_Distribution_clear();
-		//Parse_temperature(&temperatures.cur_temperature_NTC);
-		//UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, NTC_ADDRESS);
+
+		for(int i = 0; i < 50000; i++);
+
+		if(sensors_state.NTC_as_add_sensor && temperatures.cur_temperature_NTC != RESET_TEMPERATURE) {
+			Symbol_Distribution_clear();
+			Parse_temperature(&temperatures.cur_temperature_NTC);
+			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, NTC_ADDRESS);
+		}
+		send_temp_on_PC = 0;
+		TIM17->CNT = 0;
+		TIM17->CR1 |= TIM_CR1_CEN;
 	}
 
 	if(display_status == DISPLAY_TEMPERATURE) {
@@ -253,7 +267,7 @@ void init_clock() {
 
 	RCC->CR &= ~RCC_CR_PLLON;
 	while( (RCC->CR & RCC_CR_PLLRDY) != 0 );
-	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL10;
+	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL11;
 	RCC->CR |= RCC_CR_PLLON;
 	while( (RCC->CR & RCC_CR_PLLRDY) != RCC_CR_PLLRDY);
 
@@ -276,4 +290,16 @@ void Set_sensors_state(uint8_t main_sensor, uint8_t DS_as_add_sensor, uint8_t NT
 	sensors_state.DS_as_add_sensor = DS_as_add_sensor;
 	sensors_state.NTC_as_add_sensor = NTC_as_add_sensor;
 	sensors_state.AHT_as_add_sensor = AHT_as_add_sensor;
+}
+
+void init_tim17_for_1sec() {
+	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
+
+	TIM17->ARR = 8000 * FREQ_MULTIPLIER_COEF;
+	TIM17->PSC = 1000;
+
+	TIM17->DIER |= TIM_DIER_UIE;
+
+	NVIC_EnableIRQ(TIM17_IRQn);
+	NVIC_SetPriority(TIM17_IRQn,5);
 }

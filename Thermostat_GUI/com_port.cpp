@@ -211,6 +211,6 @@ void com_port::slot_SendGraph(QPixmap pixmap) {
         while(!this_port->waitForBytesWritten(-1));
         Timer.start();
         long start = Timer.elapsed();
-        while(Timer.elapsed() - start < 100);
+        while(Timer.elapsed() - start < 200);
     }
 }
