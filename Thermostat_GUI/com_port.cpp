@@ -2,12 +2,14 @@
 
 com_port::com_port()
 {
+    Tx_parcel = new QByteArray();
     this_port = new QSerialPort();
 }
 
 com_port::~com_port()
 {
     Close();
+    delete Tx_parcel;
     delete this_port;
 }
 
@@ -117,26 +119,30 @@ void com_port::slot_GetData()
 
 void com_port::slot_SendData(const char &cmd, const uint8_t data[], const int size)
 {
-    Tx_parcel.clear();
-    Tx_parcel.append(START_BYTE);
-    Tx_parcel.append(cmd);
-    Tx_parcel.append((size & 0x00FF));
-    Tx_parcel.append(((size & 0xFF0) >> 8));
+    Tx_parcel->clear();
+    Tx_parcel->append(START_BYTE);
+    Tx_parcel->append(cmd);
+    Tx_parcel->append((size & 0x00FF));
+    Tx_parcel->append(((size & 0xFF0) >> 8));
     for(int i = 0; i < size; i++)
-        Tx_parcel.append(data[i]);
-    Tx_parcel.append(END_BYTE);
+        Tx_parcel->append(data[i]);
+    Tx_parcel->append(END_BYTE);
 
 
     if (!this_port->isOpen()) {
         return;
     }
 
-    this_port->write(Tx_parcel);
+    this_port->write(*Tx_parcel);
 }
 
-void com_port::SendGraph(QPixmap pixmap) {
+
+void com_port::slot_SendGraph(QPixmap pixmap) {
     QImage image = pixmap.toImage();
+    //QImage image("C:\\Users\\denlo\\YandexDisk\\Курсовая работа\\templates\\test.png");
     QVector<QVector<int>> Matrix;
+    image = image.transformed(QTransform().rotate(90));
+    image = image.mirrored(false, true);
 
     for(int row = 0; row < image.height(); row++){
         QVector<int> row_vec;
@@ -166,6 +172,19 @@ void com_port::SendGraph(QPixmap pixmap) {
         Matrix8bit.append(row_vec);
     }
 
+        for(int row = 0; row < image.height(); row++){
+            for(int col = 0; col < image.width(); col++){
+                if(Matrix[row][col] == 1)
+                {
+                    image.setPixel(col,row, qRgb(0,0,0));                //заполнение пикселей изображения после Эрозии/Дилатации
+                    continue;
+                }
+                image.setPixel(col,row,qRgb(255,255,255));
+            }
+        }
+
+        image.save("C:\\Users\\denlo\\Documents\\Thermostat_project\\320x240.png");
+
     for(int row = 0; row < image.height(); row++){
         for(int col = 0; col < image.width(); col++)
         {
@@ -174,31 +193,24 @@ void com_port::SendGraph(QPixmap pixmap) {
     }
 
 
-    for(int parcel_iter = 0; parcel_iter < 10; parcel_iter ++) {
-        QByteArray temp_arr;
-
-        for(int row = 24*parcel_iter; row < (24 + 24*parcel_iter); row++){
+    for(int parcel_iter = 0; parcel_iter < 10; parcel_iter++) {
+        Tx_parcel->clear();
+        Tx_parcel->append(START_BYTE);
+        Tx_parcel->append(UART_DRAW_GRAPH_ON_DISPLAY);
+        Tx_parcel->append((960 & 0x00FF));
+        Tx_parcel->append(((960 & 0xFF00) >> 8));
+        for(int row = 32*parcel_iter; row < (32 + 32*parcel_iter); row++){
             for(int col = 0; col < image.width() / 8; col++)
             {
-                temp_arr.append(Matrix8bit[row][col]);
+                Tx_parcel->append(Matrix8bit[row][col]);
             }
         }
-        this_port->write(temp_arr);
+        Tx_parcel->append(END_BYTE);
+
+        this_port->write(*Tx_parcel);
         while(!this_port->waitForBytesWritten(-1));
         Timer.start();
         long start = Timer.elapsed();
-        while(Timer.elapsed() - start < 50);
+        while(Timer.elapsed() - start < 15);
     }
-//    for(int row = 0; row < image.height(); row++){
-//        for(int col = 0; col < image.width(); col++){
-//            if(Matrix[row][col] == 1)
-//            {
-//                image.setPixel(col,row, qRgb(0,0,0));                //заполнение пикселей изображения после Эрозии/Дилатации
-//                continue;
-//            }
-//            image.setPixel(col,row,qRgb(255,255,255));
-//        }
-//    }
-
-//    image.save("C:\\Users\\denlo\\Documents\\Thermostat_project\\320x240.png");
 }

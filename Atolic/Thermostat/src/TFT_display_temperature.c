@@ -13,6 +13,7 @@
 Symbols_Distribution symbols_distribution;
 uint8_t previous_full_width_curr_temp = 0;
 uint8_t previous_full_width_aim_temp = 0;
+uint8_t amount_of_got_parcel = 0;
 
 void display_temperature(double temperature, TYPE_OF_TEMPERATURE type_of_temp) {
 	Symbol_Distribution_clear();
@@ -195,6 +196,30 @@ void TFT_reset_temperature() {
 	temperatures.curr_temperature = temperatures.aim_temperature = RESET_TEMPERATURE;
 	display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
 	display_temperature(temperatures.aim_temperature, AIM_TEMP);
+}
+
+void TFT_draw_plot(uint8_t* buf) {
+	uint8_t am_of_parcel = 8;
+	uint16_t parcel = AMOUNT_OF_BYTE_ON_PAGES_44_55 / am_of_parcel;
+	for(uint8_t parcel_iter = 0; parcel_iter < am_of_parcel; parcel_iter++) {
+		for(uint16_t i = 0 + parcel_iter * parcel; i < parcel + parcel_iter * parcel; i++) {
+			for(uint16_t j = 0; j < 8; j++) {
+				//take the bit from byte and, depending on 0 or 1 it is, write color in color_mat
+				if((buf[i] >> j) & 0x01) {
+					color_mat[8*(i - parcel_iter * parcel) + j] = 0x0000;
+					continue;
+				}
+				color_mat[8*(i - parcel_iter * parcel) + j] = 0xFFFF;
+			}
+		}
+		TFT_set_region(0x14, 32*amount_of_got_parcel + 32 / am_of_parcel * parcel_iter, 32*amount_of_got_parcel + 32 / am_of_parcel + 32 / am_of_parcel * parcel_iter - 1, 0, 239);
+		Set_DC_data();
+		SPI1_SendDataDMA(&color_mat[0], parcel*8);
+	}
+	amount_of_got_parcel++;
+
+	if(amount_of_got_parcel == AMOUNT_OF_PARCEL_FOR_GRAPH)
+		amount_of_got_parcel = 0;
 }
 
 #endif /* TFT_DISPLAY_TEMPERATURE_C_ */

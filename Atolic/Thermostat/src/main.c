@@ -4,12 +4,14 @@
 int main(void)
 {
 	init_periphery();
-	//init_TIM3_for_PWM();
+
 
 	while (1)
 	{
 		check_UART_cmd();
-		DS18B20_measure_temperature();
+		//DS18B20_measure_temperature();
+		//if(program_status != STATUS_TURN_OFF && pid_state == PID_ON)
+			//	PID_regulation();
 		//Relay_regulating();
 		//NTC_measure_temperature();
 	}

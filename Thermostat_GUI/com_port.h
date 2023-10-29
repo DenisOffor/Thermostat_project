@@ -22,17 +22,17 @@
 #define CMD_SEND_AIM_TEMPERATURE 0x25
 #define CMD_SEND_HEAT_TIME 0x31
 #define UART_CMD_SET_PID_COEF 0x41
+#define UART_DRAW_GRAPH_ON_DISPLAY 0x43
 
 class com_port : public QObject
 {
     Q_OBJECT
 public:
     QSerialPort *this_port;
-    QByteArray Tx_parcel;
+    QByteArray* Tx_parcel;
     QElapsedTimer Timer;
     com_port();
     ~com_port();
-    void SendGraph(QPixmap pixmap);
 
     bool Open(const QString& name_port);
     void Close();
@@ -45,6 +45,7 @@ signals :
     void sig_TempertureInBuffer(const QByteArray& data, uint8_t sensor_number);
 public slots:
     void slot_GetData();
+    void slot_SendGraph(QPixmap pixmap);
     void slot_SendData(const char &cmd, const uint8_t data[], const int size);
 };
 

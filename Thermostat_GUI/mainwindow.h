@@ -43,6 +43,7 @@ public slots:
     void slot_PlotGraph(const QByteArray& data, uint8_t sensor_number);
 signals :
     void sig_WriteNewData(const uint8_t& cmd,const uint8_t data[], const int size);
+    void sig_PlotGraph(QPixmap);
 
 private slots:
     void slot_DisplaySetPointTemperatureValue();

@@ -11,9 +11,10 @@ MainWindow::MainWindow(QWidget *parent)
     MyGraph = new TemperatureGraph(ui->groupBox);
 
     com_port *my_com_this;
-    my_com_this = new com_port;
+    my_com_this = new com_port();
     my_com_this->Open("COM15");
 
+    connect(this, &MainWindow::sig_PlotGraph, my_com_this, &com_port::slot_SendGraph);
     connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_DisplayTemperatureValue);
     connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_PlotGraph);
     connect(this, &MainWindow::sig_WriteNewData, my_com_this, &com_port::slot_SendData);
@@ -440,7 +441,7 @@ void MainWindow::Slot_DisplayGraphOnMC() {
     gradient.setColorAt(1, QColor(128, 128, 128));
     MyGraph->GetPlot()->setBackground(QBrush(gradient));
 
-    my_com_this->SendGraph(pixmap);
+    emit sig_PlotGraph(pixmap);
 }
 
 

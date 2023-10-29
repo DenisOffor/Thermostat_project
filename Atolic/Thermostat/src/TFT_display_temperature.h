@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define AMOUNT_OF_PARCEL_FOR_GRAPH 10
+uint8_t amount_of_got_parcel;
+
 #define AMOUNT_OF_PARCEL 4
 #define MAX_SIZE_OF_OUTPUT 7
 #define START_ROW_CURR_TEMP 50
@@ -45,5 +48,6 @@ void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_row, uint8_t start_col
 void TFT_draw_symbol(uint16_t start_position_in_arr, uint16_t end_position_in_arr, uint8_t symbol_width,
 		uint8_t symbol_height, uint8_t start_row, uint8_t start_col);
 void TFT_reset_temperature();
+void TFT_draw_plot(uint8_t* buf);
 
 #endif /* TFT_DISPLAY_TEMPERATURE_H_ */
