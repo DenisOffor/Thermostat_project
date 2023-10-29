@@ -11,7 +11,7 @@
 #include "stm32f0xx.h"
 #include "FLASH.h"
 
-#define FREQ_MULTIPLIER_COEF 5.5
+#define FREQ_MULTIPLIER_COEF 5
 #define RESET_TEMPERATURE 0xFF
 
 
@@ -26,6 +26,8 @@ uint8_t pid_state;
 
 typedef struct Temperatures {
 	double curr_temperature;
+	double cur_temperature_DS;
+	double cur_temperature_NTC;
 	int aim_temperature;
 } Temperatures;
 

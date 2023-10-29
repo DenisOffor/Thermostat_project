@@ -1,6 +1,7 @@
 #ifndef TEMPERATUREGRAPH_H
 #define TEMPERATUREGRAPH_H
 
+#include <QObject>
 #include <QVector>
 #include <QPair>
 #include <QElapsedTimer>

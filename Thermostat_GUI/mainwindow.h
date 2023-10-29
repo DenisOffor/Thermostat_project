@@ -2,18 +2,18 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
-#include <QMainWindow>
 #include <QPushButton>
 #include <QTableWidgetItem>
 #include <QDebug>
 #include "temperaturegraph.h"
 #include "com_port.h"
+#include <QTimer>
 
-#define AMOUNT_OF_BTN 3
+#define AMOUNT_OF_BTN 4
 #define BTN_TURNON 0
 #define BTN_EXPAND_GPAPH_FEATURES 1
 #define BTN_EXPAND_THERMOSTAT_FEATURES 2
+#define BTN_SEND_GRAPH 3
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,6 +32,8 @@ private:
     TemperatureGraph* MyGraph;
     com_port *my_com_this;
     Ui::MainWindow *ui;
+    QTimer* TimerForGraph;
+
     //bool for buttoms push check
     bool clicke[AMOUNT_OF_BTN];
     //bool for set program pause state (Graph will not clear, temperature measurment will be paused, aim temeprature also not clear)
@@ -62,5 +64,8 @@ private slots:
     void Slot_HeatDuring();
     void Slot_SendPidCoef();
     void Slot_DisplayGraphOnMC();
+    void Slot_MainSensorChoose();
+    void Slot_SendSensorChoose();
+    void Slot_GetGraph();
 };
 #endif // MAINWINDOW_H

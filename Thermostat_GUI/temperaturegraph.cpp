@@ -36,15 +36,11 @@ void TemperatureGraph::PlotGraph(const QByteArray& data, Qt::CheckState CheckSta
         Yminmax.second = temperature + temperature / 10;
     }
 
-    if(CheckState == Qt::Checked && sensor_number == 0)
+    if(CheckState == Qt::Checked)
         AutoAxisScale(data);
 
-
-    //if(CheckTemperatureCorrectness(data)) {
     Time[sensor_number].append((GetTickCount() - start_time - Pause_time.second) / 1000);
     Temperature_value[sensor_number].append(temperature);
-     //  prev_data[sensor_number] = temperature;
-    //}
 
     plot->graph(sensor_number)->setData(Time[sensor_number], Temperature_value[sensor_number]);
     plot->replot();
@@ -136,8 +132,8 @@ void TemperatureGraph::AutoAxisScale(const QByteArray& data) {
         XRange.first = 0;
         XRange.second = (GetTickCount() - start_time - Pause_time.second) / 1000 + (XRange.second - XRange.first) / 10;
 
-        YRange.first = round(temperature - temperature / 10) < Yminmax.first ? (temperature - temperature / 10) : Yminmax.first;
-        YRange.second = round(temperature + temperature / 10) > Yminmax.second ? (temperature + temperature / 10) : Yminmax.second;
+        YRange.first =  Yminmax.first - Yminmax.first*0.1;
+        YRange.second = Yminmax.second + Yminmax.second*0.1;
 
         plot->xAxis->setRange(XRange.first, XRange.second);
         plot->yAxis->setRange(YRange.first, YRange.second);

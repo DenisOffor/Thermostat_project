@@ -14,6 +14,9 @@ MainWindow::MainWindow(QWidget *parent)
     my_com_this = new com_port();
     my_com_this->Open("COM15");
 
+    TimerForGraph = new QTimer();
+
+    connect(TimerForGraph, &QTimer::timeout, this, &MainWindow::Slot_GetGraph);
     connect(this, &MainWindow::sig_PlotGraph, my_com_this, &com_port::slot_SendGraph);
     connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_DisplayTemperatureValue);
     connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_PlotGraph);
@@ -37,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->BtnPause->setIconSize(QSize(25,25));
 
     connect(ui->Dial_Temperature, &QDial::sliderReleased, this, &MainWindow::slot_QDialReleased);
-   // connect(ui->Dial_Temperature, &QDial::valueChanged, this, &MainWindow::slot_DisplaySetPointTemperatureValue);
+    connect(ui->Dial_Temperature, &QDial::valueChanged, this, &MainWindow::slot_DisplaySetPointTemperatureValue);
 
     connect(ui->TurnOnBtn, &QPushButton::clicked, this, &MainWindow::Slot_TurnOnBtn_clicked);
     connect(ui->BtnGraphicFeatures, &QPushButton::clicked, this, &MainWindow::Slot_BtnExpandGraphicFeatures_clicked);
@@ -48,9 +51,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->BtnStartHeat, &QPushButton::clicked, this, &MainWindow::Slot_HeatDuring);
     connect(ui->BtnPidCoefSend, &QPushButton::clicked, this, &MainWindow::Slot_SendPidCoef);
     connect(ui->BtnDisplayGraphOnMC, &QPushButton::clicked, this, &MainWindow::Slot_DisplayGraphOnMC);
+    connect(ui->BtnSensorChooseSend, &QPushButton::clicked, this, &MainWindow::Slot_SendSensorChoose);
 
     connect(ui->CB_TuneAuto, &QCheckBox::stateChanged, this, &MainWindow::Slot_CB_AutoPushed);
     connect(ui->CB_TuneManual, &QCheckBox::stateChanged, this, &MainWindow::Slot_CB_ManualPushed);
+    connect(ui->CB_DS18B20_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_AHT20_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_NTC_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
 
     connect(ui->XMinLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
     connect(ui->XMaxLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
@@ -69,6 +76,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 MainWindow::~MainWindow()
 {
+    delete my_com_this;
+    delete TimerForGraph;
     delete MyGraph;
     delete ui;
 }
@@ -89,10 +98,6 @@ void MainWindow::slot_DisplaySetPointTemperatureValue() {
     QString StrTempepature = QString::number(ui->Dial_Temperature->value());
     ui->SetPointTemperatureValueText->setText(StrTempepature + "°C");
         ui->ValueTargetTempLabel->setText(StrTempepature + "°C");
-
-    const uint8_t temperature = StrTempepature.toInt();
-    qDebug() << "Temperature: " << temperature << "Time: " << GetTickCount();
-    emit sig_WriteNewData(CMD_SEND_AIM_TEMPERATURE, &temperature, sizeof(uint8_t));
 }
 
 void MainWindow::slot_QDialReleased() {
@@ -112,7 +117,11 @@ void MainWindow::slot_QDialReleased() {
 
 void MainWindow::slot_DisplayTemperatureValue(const QByteArray& data, uint8_t sensor_number)
 {
-    if (sensor_number == 0) {
+    if (sensor_number == 0 && ui->CB_DS18B20_MAIN->isChecked()) {
+        QString StrTempepature = QString(data);
+        ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
+    }
+    if (sensor_number == 1 && ui->CB_NTC_MAIN->isChecked()) {
         QString StrTempepature = QString(data);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
@@ -193,6 +202,8 @@ void MainWindow::Slot_TurnOnBtn_clicked()
                                      "min-width: 10em; "
                                      "color: black}");
         clicke[BTN_TURNON] = !clicke[BTN_TURNON];
+        ui->CB_DS18B20_MAIN->setCheckState(Qt::Checked);
+        ui->CB_DS18B20_MAIN->setEnabled(false);
         ui->Dial_Temperature->setEnabled(true);
         emit ui->BtnClearGraph->clicked();
         emit sig_WriteNewData(START, 0x00, 0);
@@ -417,7 +428,7 @@ void MainWindow::Slot_SendPidCoef() {
         parcel[i*sizeof(uint16_t) + 1] = ((data[i] >> 8) & 0xFF);
     }
 
-    emit sig_WriteNewData(UART_CMD_SET_PID_COEF, parcel, 3*sizeof(uint16_t));
+    emit sig_WriteNewData(CMD_SET_PID_COEF, parcel, 3*sizeof(uint16_t));
 }
 
 void MainWindow::ShiftWidgets(int shift) {
@@ -428,7 +439,52 @@ void MainWindow::ShiftWidgets(int shift) {
     }
 }
 
-void MainWindow::Slot_DisplayGraphOnMC() {
+void MainWindow::Slot_DisplayGraphOnMC()
+{
+    if(clicke[BTN_TURNON] == false)
+        return;
+    if(!clicke[BTN_SEND_GRAPH]){
+        ui->BtnDisplayGraphOnMC->setStyleSheet("QPushButton::hover{ "
+                                    "background-color: rgb(90,90,90);"
+                                    "border-style: outset; "
+                                    "border-width: 5px; "
+                                    "border-radius: 14px; "
+                                    "border-color: rgb(105,105,105); "
+                                    "color: white;}"
+                                    "QPushButton{"
+                                    "background-color: rgb(90,90,90); "
+                                    "border-style: outset; "
+                                    "border-width: 3px; "
+                                    "border-radius: 13px; "
+                                    " border-color: rgb(100,100,100); "
+                                    "color: white; }");
+        clicke[BTN_SEND_GRAPH] = !clicke[BTN_SEND_GRAPH];
+        emit sig_WriteNewData(CMD_DRAW_GRAPH, 0, 0);
+        TimerForGraph->start(6000);
+    }
+    else
+    {
+        ui->BtnDisplayGraphOnMC->setStyleSheet("QPushButton::hover{ "
+                                    "background-color: rgb(115,115,115);"
+                                    "border-style: outset; "
+                                    "border-width: 5px; "
+                                    "border-radius: 14px; "
+                                    "border-color: rgb(105,105,105); "
+                                    "color: white;}"
+                                    "QPushButton{"
+                                    "background-color: rgb(115,115,115); "
+                                    "border-style: outset; "
+                                    "border-width: 3px; "
+                                    "border-radius: 13px; "
+                                    "border-color: rgb(105,105,105); "
+                                    "color: white;}");
+        clicke[BTN_SEND_GRAPH] = !clicke[BTN_SEND_GRAPH];
+        emit sig_WriteNewData(CMD_DRAW_TEMPERATURE, 0, 0);
+        TimerForGraph->stop();
+    }
+}
+
+void MainWindow::Slot_GetGraph() {
     QLinearGradient gradient(0, 0, 0, 400);
     gradient.setColorAt(0, QColor(255, 255, 255));
     gradient.setColorAt(0.38, QColor(255, 255, 255));
@@ -441,11 +497,69 @@ void MainWindow::Slot_DisplayGraphOnMC() {
     gradient.setColorAt(1, QColor(128, 128, 128));
     MyGraph->GetPlot()->setBackground(QBrush(gradient));
 
+    qDebug() << "I'm here \n";
+
     emit sig_PlotGraph(pixmap);
 }
 
+void MainWindow::Slot_MainSensorChoose() {
+    if(ui->CB_DS18B20_MAIN->isChecked() && ui->CB_DS18B20_MAIN->isEnabled()) {
+        ui->CB_DS18B20_MAIN->setEnabled(false);
+        ui->CB_DS18B20_ADD->setCheckState(Qt::Checked);
+        ui->CB_DS18B20_ADD->setEnabled(false);
 
+        ui->CB_NTC_MAIN->setEnabled(true);
+        ui->CB_AHT20_MAIN->setEnabled(true);
+        ui->CB_NTC_ADD->setEnabled(true);
+        ui->CB_AHT20_ADD->setEnabled(true);
 
+        ui->CB_NTC_MAIN->setCheckState(Qt::Unchecked);
+        ui->CB_AHT20_MAIN->setCheckState(Qt::Unchecked);
+    }
+
+    if(ui->CB_NTC_MAIN->isChecked() && ui->CB_NTC_MAIN->isEnabled()) {
+        ui->CB_NTC_MAIN->setEnabled(false);
+        ui->CB_NTC_ADD->setCheckState(Qt::Checked);
+        ui->CB_NTC_ADD->setEnabled(false);
+
+        ui->CB_DS18B20_MAIN->setEnabled(true);
+        ui->CB_AHT20_MAIN->setEnabled(true);
+        ui->CB_DS18B20_ADD->setEnabled(true);
+        ui->CB_AHT20_ADD->setEnabled(true);
+
+        ui->CB_DS18B20_MAIN->setCheckState(Qt::Unchecked);
+        ui->CB_AHT20_MAIN->setCheckState(Qt::Unchecked);
+    }
+
+    if(ui->CB_AHT20_MAIN->isChecked() && ui->CB_AHT20_MAIN->isEnabled()) {
+        ui->CB_AHT20_MAIN->setEnabled(false);
+        ui->CB_AHT20_ADD->setCheckState(Qt::Checked);
+        ui->CB_AHT20_ADD->setEnabled(false);
+
+        ui->CB_NTC_MAIN->setEnabled(true);
+        ui->CB_DS18B20_MAIN->setEnabled(true);
+        ui->CB_NTC_ADD->setEnabled(true);
+        ui->CB_DS18B20_ADD->setEnabled(true);
+
+        ui->CB_NTC_MAIN->setCheckState(Qt::Unchecked);
+        ui->CB_DS18B20_MAIN->setCheckState(Qt::Unchecked);
+    }
+}
+
+void MainWindow::Slot_SendSensorChoose() {
+    uint8_t data[4];
+    if(ui->CB_DS18B20_MAIN->isChecked())
+        data[0] = 1;
+    if(ui->CB_NTC_MAIN->isChecked())
+        data[0] = 2;
+    if(ui->CB_AHT20_MAIN->isChecked())
+        data[0] = 3;
+    data[1] = (uint8_t)ui->CB_DS18B20_ADD->isChecked();
+    data[2] = (uint8_t)ui->CB_NTC_ADD->isChecked();
+    data[3] = (uint8_t)ui->CB_AHT20_ADD->isChecked();
+
+    emit sig_WriteNewData(CMD_SENSOR_CHOOSE, data, 4*sizeof(uint16_t));
+}
 
 
 

@@ -9,10 +9,12 @@ int main(void)
 	while (1)
 	{
 		check_UART_cmd();
-		//DS18B20_measure_temperature();
+		//Measure_temperature();
+		Display_data();
 		//if(program_status != STATUS_TURN_OFF && pid_state == PID_ON)
 			//	PID_regulation();
 		//Relay_regulating();
-		//NTC_measure_temperature();
+		//if(parcel_state == ALL_PARCEL_HERE)
+		//	TFT_draw_plot();
 	}
 }

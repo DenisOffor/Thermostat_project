@@ -196,7 +196,7 @@ void com_port::slot_SendGraph(QPixmap pixmap) {
     for(int parcel_iter = 0; parcel_iter < 10; parcel_iter++) {
         Tx_parcel->clear();
         Tx_parcel->append(START_BYTE);
-        Tx_parcel->append(UART_DRAW_GRAPH_ON_DISPLAY);
+        Tx_parcel->append(CMD_GET_GRAPH_ON_DISPLAY);
         Tx_parcel->append((960 & 0x00FF));
         Tx_parcel->append(((960 & 0xFF00) >> 8));
         for(int row = 32*parcel_iter; row < (32 + 32*parcel_iter); row++){
@@ -211,6 +211,6 @@ void com_port::slot_SendGraph(QPixmap pixmap) {
         while(!this_port->waitForBytesWritten(-1));
         Timer.start();
         long start = Timer.elapsed();
-        while(Timer.elapsed() - start < 15);
+        while(Timer.elapsed() - start < 100);
     }
 }

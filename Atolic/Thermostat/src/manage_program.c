@@ -8,6 +8,9 @@
 #include "manage_program.h"
 
 PROGRAM_STATUS program_status = STATUS_TURN_OFF;
+uint8_t display_status = DISPLAY_TEMPERATURE;
+Sensors_State sensors_state;
+
 
 void init_periphery() {
 	//	Write_data_to_flash(PAGE60_FOR_0_1_2_3, &mat_for_symbol1[0], 1024);
@@ -23,8 +26,116 @@ void init_periphery() {
 	init_periphery_relay_regulating();
 	NTC_init_periphery();
 	init_TIM3_for_PWM();
+
 	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
+
 	reset_all_var();
+}
+
+void check_UART_cmd() {
+	if(rx_data_state == UART_DATA_WAITING || rx_data_state == UART_CMD_RECEIVED)
+		return;
+	switch(rx_received_cmd) {
+
+		case UART_CMD_TURN_OFF:
+			program_status = STATUS_TURN_OFF;
+			reset_all_var();
+			break;
+
+		case UART_CMD_TURN_ON:
+			program_status = STATUS_START;
+			reset_all_var();
+			break;
+
+		case UART_CMD_SET_AIM_TEMP:
+			temperatures.aim_temperature = UART_data_buf[0];
+			if(temperatures.aim_temperature > 120)
+				temperatures.aim_temperature = temperatures.aim_temperature - 256;
+			if(temperatures.aim_temperature > temperatures.curr_temperature) {
+				TIM3->CR1 |= TIM_CR1_CEN;
+				//regulate_status = HEATING;
+			}
+			TIM16_set_wait_time(9.f);
+			break;
+
+		case UART_CMD_HEAT_DURING:
+			regulate_status = HEATING_DURING_TIME;
+			TIM6_set_heat_time(UART_data_buf[0]);
+			break;
+
+		case UART_CMD_SET_PID_COEF:
+			set_Pid_Coef((uint16_t)(UART_data_buf[0] | (UART_data_buf[1] << 8)) , (uint16_t)(UART_data_buf[2] | (UART_data_buf[3] << 8)),
+					(uint16_t)(UART_data_buf[4] | (UART_data_buf[5] << 8)));
+			break;
+
+		case UART_GET_GRAPH_ON_DISPLAY:
+			TFT_picture_Wrire_in_FLASH(&UART_data_buf[0]);
+			break;
+
+		case CMD_SENSOR_CHOOSE:
+			Set_sensors_state(UART_data_buf[0], UART_data_buf[1], UART_data_buf[2], UART_data_buf[3]);
+			break;
+
+		case CMD_DRAW_GRAPH:
+			display_status = DISPLAY_GRAPH;
+			break;
+		case CMD_DRAW_TEMPERATURE:
+			display_status = DISPLAY_TEMPERATURE;
+			break;
+
+	}
+
+	rx_received_cmd = 0;
+	rx_data_state = UART_DATA_WAITING;
+}
+
+void Measure_temperature() {
+	if(program_status == STATUS_TURN_OFF)
+		return;
+	if(sensors_state.DS_as_add_sensor)
+		DS18B20_measure_temperature();
+	if(sensors_state.NTC_as_add_sensor)
+		NTC_measure_temperature();
+	//if(sensors_state.AHT_as_add_sensor)
+	//	AHT_measure_temperature();
+
+	if(sensors_state.main_sensor == 1)
+		temperatures.curr_temperature = temperatures.cur_temperature_DS;
+	if(sensors_state.main_sensor == 2)
+		temperatures.curr_temperature = temperatures.cur_temperature_NTC;
+	//if(sensors_state.main_sensor == 3)
+	//	temperatures.curr_temperature = temperatures.cur_temperature_AHT;
+}
+
+void Display_data() {
+	if(program_status == STATUS_TURN_OFF)
+		return;
+	if(sensors_state.DS_as_add_sensor && temperatures.cur_temperature_DS != RESET_TEMPERATURE) {
+		//Symbol_Distribution_clear();
+		//Parse_temperature(&temperatures.cur_temperature_DS);
+		//UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
+	}
+
+	for(int i = 0; i < 50000; i++);
+
+	if(sensors_state.NTC_as_add_sensor && temperatures.cur_temperature_NTC != RESET_TEMPERATURE) {
+		//Symbol_Distribution_clear();
+		//Parse_temperature(&temperatures.cur_temperature_NTC);
+		//UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, NTC_ADDRESS);
+	}
+
+	if(display_status == DISPLAY_TEMPERATURE) {
+		display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
+		display_temperature(temperatures.aim_temperature, AIM_TEMP);
+	}
+
+	if(display_status == DISPLAY_GRAPH) {
+		if(parcel_state == NOT_ALL_PARCEL_HERE)
+			return;
+		TFT_draw_plot();
+		parcel_state = NOT_ALL_PARCEL_HERE;
+		amount_of_got_parcel = 0;
+	}
 }
 
 void DS18B20_measure_temperature() {
@@ -37,12 +148,9 @@ void DS18B20_measure_temperature() {
 			break;
 		case TEMPERATURE_READING:
 			temprepature_measurment_read();
-			ds18b20_cmd = TEMPERATURE_DISPLAYING;
-			break;
-		case TEMPERATURE_DISPLAYING:
-			display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
-			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
 			ds18b20_cmd = TEMPERATURE_CONVERTING;
+			break;
+		default:
 			break;
 	}
 };
@@ -53,47 +161,7 @@ void NTC_measure_temperature() {
 	//if ADC not get value yet, return
 	if(ADC_HAVE_DATA == 0)
 		return;
-
-	display_temperature(NTC_get_temperature(), NTC_TEMP);
-	UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, NTC_ADDRESS);
-}
-
-void check_UART_cmd() {
-	if(rx_data_state == UART_DATA_WAITING || rx_data_state == UART_CMD_RECEIVED)
-		return;
-	switch(rx_received_cmd) {
-		case UART_CMD_TURN_OFF:
-			program_status = STATUS_TURN_OFF;
-			reset_all_var();
-			break;
-		case UART_CMD_TURN_ON:
-			program_status = STATUS_START;
-			reset_all_var();
-			break;
-		case UART_CMD_SET_AIM_TEMP:
-			temperatures.aim_temperature = UART_data_buf[0];
-			if(temperatures.aim_temperature > 120)
-				temperatures.aim_temperature = temperatures.aim_temperature - 256;
-			display_temperature(temperatures.aim_temperature, AIM_TEMP);
-			if(temperatures.aim_temperature > temperatures.curr_temperature)
-				TIM3->CR1 |= TIM_CR1_CEN;
-				//regulate_status = HEATING;
-			TIM16_set_wait_time(9.f);
-			break;
-		case UART_CMD_HEAT_DURING:
-			regulate_status = HEATING_DURING_TIME;
-			TIM6_set_heat_time(UART_data_buf[0]);
-			break;
-		case UART_CMD_SET_PID_COEF:
-			set_Pid_Coef((uint16_t)(UART_data_buf[0] | (UART_data_buf[1] << 8)) , (uint16_t)(UART_data_buf[2] | (UART_data_buf[3] << 8)),
-					(uint16_t)(UART_data_buf[4] | (UART_data_buf[5] << 8)));
-			break;
-		case UART_DRAW_GRAPH_ON_DISPLAY:
-			TFT_draw_plot(&UART_data_buf[0]);
-			break;
-	}
-	rx_received_cmd = 0;
-	rx_data_state = UART_DATA_WAITING;
+	temperatures.cur_temperature_NTC = NTC_get_temperature();
 }
 
 void Relay_regulating() {
@@ -129,6 +197,8 @@ void Relay_regulating() {
 		case HEATING_DURING_TIME:
 			TIM6->CR1 |= TIM_CR1_CEN;
 			relay_on();
+			break;
+		default:
 			break;
 	}
 }
@@ -168,8 +238,10 @@ void PID_regulation() {
 
 void reset_all_var() {
 	TFT_reset_temperature();
+	Clear_sensors_state();
 	TIM3->CR1 &= ~TIM_CR1_CEN;
 	ds18b20_cmd = TEMPERATURE_CONVERTING;
+	ADC_HAVE_DATA = 0;
 	regulate_status = WAITING;
 }
 
@@ -181,11 +253,27 @@ void init_clock() {
 
 	RCC->CR &= ~RCC_CR_PLLON;
 	while( (RCC->CR & RCC_CR_PLLRDY) != 0 );
-	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL11;
+	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL10;
 	RCC->CR |= RCC_CR_PLLON;
 	while( (RCC->CR & RCC_CR_PLLRDY) != RCC_CR_PLLRDY);
 
 	RCC->CFGR |= RCC_CFGR_SW_PLL;
 	while( (RCC->CFGR & RCC_CFGR_SWS_PLL) != RCC_CFGR_SWS_PLL);
 	SystemCoreClockUpdate();
+
+	FLASH->ACR |= FLASH_ACR_LATENCY;
+}
+
+void Clear_sensors_state() {
+	sensors_state.main_sensor = 1;
+	sensors_state.DS_as_add_sensor = 1;
+	sensors_state.NTC_as_add_sensor = 0;
+	sensors_state.AHT_as_add_sensor = 0;
+}
+
+void Set_sensors_state(uint8_t main_sensor, uint8_t DS_as_add_sensor, uint8_t NTC_as_add_sensor, uint8_t AHT_as_add_sensor) {
+	sensors_state.main_sensor = main_sensor;
+	sensors_state.DS_as_add_sensor = DS_as_add_sensor;
+	sensors_state.NTC_as_add_sensor = NTC_as_add_sensor;
+	sensors_state.AHT_as_add_sensor = AHT_as_add_sensor;
 }
