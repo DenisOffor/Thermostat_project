@@ -2,13 +2,27 @@
 
 com_port::com_port()
 {
+    first_in = true;
+    TimerForParcel = new QTimer();
+    connect(TimerForParcel, &QTimer::timeout, this, &com_port::slot_SendGraphPart);
+
     Tx_parcel = new QByteArray();
     this_port = new QSerialPort();
+
+    for(int row = 0; row < 320; row++) {
+        QVector<uint8_t> row_vec;
+        for(int col = 0; col < 30; col++)
+        {
+            row_vec.append(0);
+        }
+        Matrix8bitForGraph.append(row_vec);
+    }
 }
 
 com_port::~com_port()
 {
     Close();
+    delete TimerForParcel;
     delete Tx_parcel;
     delete this_port;
 }
@@ -50,12 +64,18 @@ int com_port::SetUp()
 
 void com_port::slot_GetData()
 {
+   if(!first_in) {
+       first_in = true;
+       return;
+   }
     QByteArray temp_buffer = this_port->readAll();
+    QByteArray temperature_ds;
+    QByteArray temperature_ntc;
+    QVector<uint8_t> data;
+
     uint8_t lowByte = 0;
     uint8_t highByte = 0;
     uint16_t number = 0;
-   if(temp_buffer.size() > 11)
-       return;
 
     //if start and end bytes in buffer => parcel is got
     if(temp_buffer.at(0) == START_BYTE && temp_buffer.at(temp_buffer.size() - 1) == END_BYTE) {
@@ -63,13 +83,18 @@ void com_port::slot_GetData()
         buffer.remove(0,1); //remove start byte
         buffer.chop(1); //remove end byte
         switch (buffer.at(0)) {
-        case DS18B20_ADDRESS:
-            buffer.remove(0,1);
-            emit sig_TempertureInBuffer(buffer, 0);
-            break;
-        case NTC_ADDRESS:
-            buffer.remove(0,1);
-            emit sig_TempertureInBuffer(buffer, 1);
+        case GET_TEMPERATURE_FROM_MC:
+            buffer.remove(0,1); //remove cmd
+            float temp_ds, temp_ntc;
+            std::memcpy(&temp_ds, buffer.constData(), sizeof(float));
+            std::memcpy(&temp_ntc, (buffer.constData() + 4), sizeof(float));
+            temperature_ds.append(QString::number(temp_ds,'f', 2).toUtf8());
+            temperature_ntc.append(QString::number(temp_ntc,'f', 2).toUtf8());
+            data.append((uint8_t)buffer.at(8));
+            data.append((uint8_t)buffer.at(9));
+            data.append((uint8_t)buffer.at(10));
+            data.append((uint8_t)buffer.at(11));
+            emit sig_TempertureInBuffer(temperature_ds,temperature_ntc, data);
             break;
         case PWM_ADDRESS:
             buffer.remove(0,1);
@@ -82,6 +107,7 @@ void com_port::slot_GetData()
             return;
             break;
         }
+        buffer.clear();
         return;
     }
 
@@ -98,13 +124,18 @@ void com_port::slot_GetData()
         buffer.chop(1); //remove end byte
 
         switch (buffer.at(0)) {
-        case DS18B20_ADDRESS:
-            buffer.remove(0,1);
-            emit sig_TempertureInBuffer(buffer, 0);
-            break;
-        case NTC_ADDRESS:
-            buffer.remove(0,1);
-            emit sig_TempertureInBuffer(buffer, 1);
+        case GET_TEMPERATURE_FROM_MC:
+            buffer.remove(0,1); //remove cmd
+            float temp_ds, temp_ntc;
+            std::memcpy(&temp_ds, buffer.constData(), sizeof(float));
+            std::memcpy(&temp_ntc, (buffer.constData() + 4), sizeof(float));
+            temperature_ds.append(QString::number(temp_ds,'f', 2).toUtf8());
+            temperature_ntc.append(QString::number(temp_ntc,'f', 2).toUtf8());
+            data.append((uint8_t)buffer.at(8));
+            data.append((uint8_t)buffer.at(9));
+            data.append((uint8_t)buffer.at(10));
+            data.append((uint8_t)buffer.at(11));
+            emit sig_TempertureInBuffer(temperature_ds, temperature_ntc, data);
             break;
         case PWM_ADDRESS:
             buffer.remove(0,1);
@@ -114,6 +145,8 @@ void com_port::slot_GetData()
             return;
             break;
         }
+
+        buffer.clear();
     }
 }
 
@@ -123,7 +156,7 @@ void com_port::slot_SendData(const char &cmd, const uint8_t data[], const int si
     Tx_parcel->append(START_BYTE);
     Tx_parcel->append(cmd);
     Tx_parcel->append((size & 0x00FF));
-    Tx_parcel->append(((size & 0xFF0) >> 8));
+    Tx_parcel->append(((size & 0xFF00) >> 8));
     for(int i = 0; i < size; i++)
         Tx_parcel->append(data[i]);
     Tx_parcel->append(END_BYTE);
@@ -134,16 +167,29 @@ void com_port::slot_SendData(const char &cmd, const uint8_t data[], const int si
     }
 
     this_port->write(*Tx_parcel);
+    this_port->waitForBytesWritten(-1);
 }
 
+void com_port::slot_SendData(const char &cmd, const QByteArray data) {
+    Tx_parcel->clear();
+    Tx_parcel->append(START_BYTE);
+    Tx_parcel->append(cmd);
+    Tx_parcel->append(data.size());
+    Tx_parcel->append(((data.size() & 0xFF00) >> 8));
+    Tx_parcel->append(data);
+    Tx_parcel->append(END_BYTE);
+
+    this_port->write(*Tx_parcel);
+    while(!this_port->waitForBytesWritten(-1));
+    for(int i = 0; i < 1000; i++);
+}
 
 void com_port::slot_SendGraph(QPixmap pixmap) {
     QImage image = pixmap.toImage();
-    //QImage image("C:\\Users\\denlo\\YandexDisk\\Курсовая работа\\templates\\test.png");
-    QVector<QVector<int>> Matrix;
     image = image.transformed(QTransform().rotate(90));
     image = image.mirrored(false, true);
 
+    QVector<QVector<int>> Matrix;
     for(int row = 0; row < image.height(); row++){
         QVector<int> row_vec;
         for(int col = 0; col < image.width(); col++)
@@ -153,7 +199,7 @@ void com_port::slot_SendGraph(QPixmap pixmap) {
         Matrix.append(row_vec);
     }
 
-    for(int row = 0; row < image.height(); row++){
+    for(int row = 0; row < image.height(); row++) {
         for(int col = 0;col < image.width(); col++)
         {
             int n = image.pixelColor(col,row).value();
@@ -161,56 +207,32 @@ void com_port::slot_SendGraph(QPixmap pixmap) {
         }
     }
 
-    QVector<QVector<uint8_t>> Matrix8bit;
-
-    for(int row = 0; row < image.height(); row++){
-        QVector<uint8_t> row_vec;
-        for(int col = 0; col < image.width() / 8; col++)
-        {
-            row_vec.append(0);
-        }
-        Matrix8bit.append(row_vec);
-    }
-
-        for(int row = 0; row < image.height(); row++){
-            for(int col = 0; col < image.width(); col++){
-                if(Matrix[row][col] == 1)
-                {
-                    image.setPixel(col,row, qRgb(0,0,0));                //заполнение пикселей изображения после Эрозии/Дилатации
-                    continue;
-                }
-                image.setPixel(col,row,qRgb(255,255,255));
-            }
-        }
-
-        image.save("C:\\Users\\denlo\\Documents\\Thermostat_project\\320x240.png");
-
     for(int row = 0; row < image.height(); row++){
         for(int col = 0; col < image.width(); col++)
         {
-            Matrix8bit[row][col / 8] |= (Matrix[row][col] << (col % 8));
+            Matrix8bitForGraph[row][col / 8] &= ~(1 << (col % 8));
+            Matrix8bitForGraph[row][col / 8] |= (Matrix[row][col] << (col % 8));
+        }
+    }
+    TimerForParcel->start(200);
+}
+
+static int parcel_iter = 0;
+void com_port::slot_SendGraphPart() {
+    QByteArray temp;
+    for(int row = 32*parcel_iter; row < (32 + 32*parcel_iter); row++){
+        for(int col = 0; col < 30; col++)
+        {
+            temp.append(Matrix8bitForGraph[row][col]);
         }
     }
 
+    slot_SendData(CMD_GET_GRAPH_ON_DISPLAY,temp);
 
-    for(int parcel_iter = 0; parcel_iter < 10; parcel_iter++) {
-        Tx_parcel->clear();
-        Tx_parcel->append(START_BYTE);
-        Tx_parcel->append(CMD_GET_GRAPH_ON_DISPLAY);
-        Tx_parcel->append((960 & 0x00FF));
-        Tx_parcel->append(((960 & 0xFF00) >> 8));
-        for(int row = 32*parcel_iter; row < (32 + 32*parcel_iter); row++){
-            for(int col = 0; col < image.width() / 8; col++)
-            {
-                Tx_parcel->append(Matrix8bit[row][col]);
-            }
-        }
-        Tx_parcel->append(END_BYTE);
-
-        this_port->write(*Tx_parcel);
-        while(!this_port->waitForBytesWritten(-1));
-        Timer.start();
-        long start = Timer.elapsed();
-        while(Timer.elapsed() - start < 200);
+    parcel_iter++;
+    if(parcel_iter == 10) {
+        TimerForParcel->stop();
+        parcel_iter = 0;
     }
 }
+

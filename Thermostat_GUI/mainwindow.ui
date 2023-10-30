@@ -926,7 +926,7 @@
      <set>Qt::AlignCenter</set>
     </property>
     <property name="flat">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <widget class="QLabel" name="TemperatureValueText">
      <property name="geometry">
@@ -1949,7 +1949,7 @@ color: rgb(255,255,255);</string>
       <rect>
        <x>821</x>
        <y>310</y>
-       <width>140</width>
+       <width>164</width>
        <height>31</height>
       </rect>
      </property>
@@ -1961,7 +1961,7 @@ color: rgb(255,255,255);</string>
      </property>
      <property name="minimumSize">
       <size>
-       <width>140</width>
+       <width>164</width>
        <height>0</height>
       </size>
      </property>

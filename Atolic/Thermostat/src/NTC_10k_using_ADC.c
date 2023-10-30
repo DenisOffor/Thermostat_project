@@ -8,8 +8,6 @@
 
 #include "NTC_10k_using_ADC.h"
 
-uint8_t cycle_start = 0;
-
 void DMA1_Channel1_IRQHandler(void) {
 	DMA1->IFCR |= DMA_IFCR_CTCIF1;
 	ADC_HAVE_DATA = 1;
@@ -17,7 +15,7 @@ void DMA1_Channel1_IRQHandler(void) {
 
 double NTC_get_temperature() {
 	Ntc_R = ( (NTC_UP_R) / ( (4095.0 / ADC_value) - 1) );
-	double Ntc_Ln = log(Ntc_R);
+	float Ntc_Ln = log(Ntc_R);
 	Ntc_Tmp = (1.0/(A + B*Ntc_Ln + C*Ntc_Ln*Ntc_Ln*Ntc_Ln)) - 273.15;
 	ADC_HAVE_DATA = 0;
 	return Ntc_Tmp;

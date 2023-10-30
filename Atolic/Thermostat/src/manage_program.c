@@ -119,20 +119,24 @@ void Display_data() {
 		return;
 
 	if(send_temp_on_PC == 1) {
+		uint8_t temprerature_parcel[12];
 		if(sensors_state.DS_as_add_sensor && temperatures.cur_temperature_DS != RESET_TEMPERATURE) {
-			Symbol_Distribution_clear();
-			Parse_temperature(&temperatures.cur_temperature_DS);
-			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, DS18B20_ADDRESS);
+		    char *ptr = (char*)&(temperatures.cur_temperature_DS);
+		    for (size_t i = 0; i < sizeof(float); ++i)
+		    	temprerature_parcel[i] = ptr[i];
 		}
-
-
-		for(int i = 0; i < 50000; i++);
 
 		if(sensors_state.NTC_as_add_sensor && temperatures.cur_temperature_NTC != RESET_TEMPERATURE) {
-			Symbol_Distribution_clear();
-			Parse_temperature(&temperatures.cur_temperature_NTC);
-			UART_send_temperature(symbols_distribution.char_output, symbols_distribution.amout_of_symbols - 1, NTC_ADDRESS);
+		    char *ptr = (char*)&(temperatures.cur_temperature_NTC);
+		    for (size_t i = 4; i < sizeof(float)*2; ++i)
+		    	temprerature_parcel[i] = ptr[i - 4];
 		}
+		temprerature_parcel[8] = sensors_state.main_sensor;
+		temprerature_parcel[9] = temperatures.cur_temperature_DS == RESET_TEMPERATURE ? 0 : sensors_state.DS_as_add_sensor;
+		temprerature_parcel[10] = temperatures.cur_temperature_NTC == RESET_TEMPERATURE ? 0 : sensors_state.NTC_as_add_sensor;
+		temprerature_parcel[11] = 0; // temperatures.cur_temperature_DS == RESET_TEMPERATURE ? 0 : sensors_state.DS_as_add_sensor;
+
+		UART_send_temperature(temprerature_parcel, 12, SEND_TEMPERATURE);
 		send_temp_on_PC = 0;
 		TIM17->CNT = 0;
 		TIM17->CR1 |= TIM_CR1_CEN;
@@ -153,8 +157,6 @@ void Display_data() {
 }
 
 void DS18B20_measure_temperature() {
-	if(program_status == STATUS_TURN_OFF)
-		return;
 	switch(ds18b20_cmd) {
 		case TEMPERATURE_CONVERTING:
 			temperature_measurment_start();
@@ -170,8 +172,6 @@ void DS18B20_measure_temperature() {
 };
 
 void NTC_measure_temperature() {
-	if(program_status == STATUS_TURN_OFF)
-		return;
 	//if ADC not get value yet, return
 	if(ADC_HAVE_DATA == 0)
 		return;
@@ -253,9 +253,27 @@ void PID_regulation() {
 void reset_all_var() {
 	TFT_reset_temperature();
 	Clear_sensors_state();
+	pid_state = PID_OFF;
 	TIM3->CR1 &= ~TIM_CR1_CEN;
 	ds18b20_cmd = TEMPERATURE_CONVERTING;
+	Constatns_Relay_clear();
+	clear_Pid_Coef();
 	ADC_HAVE_DATA = 0;
+
+	previous_full_width_curr_temp = 0;
+	previous_full_width_aim_temp = 0;
+
+	amount_of_got_parcel = 0;
+	parcel_state = NOT_ALL_PARCEL_HERE;
+
+	rx_data_state = UART_DATA_WAITING;
+	rx_received_cmd = 0;
+	size_of_parcel = 0;
+
+	TFT_clearAllDisplay(0x00,0x00,0x00);
+
+	display_status = DISPLAY_TEMPERATURE;
+
 	regulate_status = WAITING;
 }
 
@@ -267,7 +285,7 @@ void init_clock() {
 
 	RCC->CR &= ~RCC_CR_PLLON;
 	while( (RCC->CR & RCC_CR_PLLRDY) != 0 );
-	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL11;
+	RCC->CFGR = ( RCC->CFGR & (~RCC_CFGR_PLLMUL) ) | RCC_CFGR_PLLMUL10;
 	RCC->CR |= RCC_CR_PLLON;
 	while( (RCC->CR & RCC_CR_PLLRDY) != RCC_CR_PLLRDY);
 

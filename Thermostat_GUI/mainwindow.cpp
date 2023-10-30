@@ -9,22 +9,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     MyGraph = new TemperatureGraph(ui->groupBox);
-
-    com_port *my_com_this;
     my_com_this = new com_port();
     my_com_this->Open("COM15");
-
     TimerForGraph = new QTimer();
 
     connect(TimerForGraph, &QTimer::timeout, this, &MainWindow::Slot_GetGraph);
     connect(this, &MainWindow::sig_PlotGraph, my_com_this, &com_port::slot_SendGraph);
     connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_DisplayTemperatureValue);
     connect(my_com_this, &com_port::sig_TempertureInBuffer, this, &MainWindow::slot_PlotGraph);
-    connect(this, &MainWindow::sig_WriteNewData, my_com_this, &com_port::slot_SendData);
+    connect(this, &MainWindow::sig_WriteNewData, my_com_this, static_cast<void(com_port::*)(const char &, const uint8_t [], const int)>(&com_port::slot_SendData));
 
-    for(uint8_t i = 0; i < AMOUNT_OF_BTN; i++)
-        clicke[i] = false;
-    pause = false;
+    resetMainWindow();
 
     ui->SetPointTemperatureValueText->hide();
     ui->SetTempLabel->hide();
@@ -60,6 +55,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->CB_DS18B20_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
     connect(ui->CB_AHT20_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
     connect(ui->CB_NTC_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_DS18B20_ADD, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_AHT20_ADD, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_NTC_ADD, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
 
     connect(ui->XMinLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
     connect(ui->XMaxLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
@@ -117,14 +115,14 @@ void MainWindow::slot_QDialReleased() {
     emit sig_WriteNewData(CMD_SEND_AIM_TEMPERATURE, &temperature, sizeof(uint8_t));
 }
 
-void MainWindow::slot_DisplayTemperatureValue(const QByteArray& data, uint8_t sensor_number)
+void MainWindow::slot_DisplayTemperatureValue(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state)
 {
-    if (sensor_number == 0 && ui->CB_DS18B20_MAIN->isChecked()) {
-        QString StrTempepature = QString(data);
+    if (sensors_state[0] == 1 && ui->CB_DS18B20_MAIN->isChecked()) {
+        QString StrTempepature = QString(temp1);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
-    if (sensor_number == 1 && ui->CB_NTC_MAIN->isChecked()) {
-        QString StrTempepature = QString(data);
+    if (sensors_state[0] == 2 && ui->CB_NTC_MAIN->isChecked()) {
+        QString StrTempepature = QString(temp2);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
 }
@@ -138,10 +136,13 @@ void MainWindow::Slot_ClearGraph() {
     MyGraph->ClearGraphs();
 }
 
-void MainWindow::slot_PlotGraph(const QByteArray& data, uint8_t sensor_number) {
+void MainWindow::slot_PlotGraph(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state) {
     if(clicke[BTN_EXPAND_GPAPH_FEATURES] && !pause)
     {
-        MyGraph->PlotGraph(data, ui->CB_TuneAuto->checkState(), sensor_number);
+        if(sensors_state[1] == 1)
+            MyGraph->PlotGraph(temp1, ui->CB_TuneAuto->checkState(), 0);
+        if(sensors_state[2] == 1)
+            MyGraph->PlotGraph(temp2, ui->CB_TuneAuto->checkState(), 1);
 
         ui->XMinLineEdit->setText(QString::number(round(MyGraph->GetXRange().first)));
         ui->XMaxLineEdit->setText(QString::number(round(MyGraph->GetXRange().second)));
@@ -203,12 +204,15 @@ void MainWindow::Slot_TurnOnBtn_clicked()
                                      "border-color: white; "
                                      "min-width: 10em; "
                                      "color: black}");
-        clicke[BTN_TURNON] = !clicke[BTN_TURNON];
-        ui->CB_DS18B20_MAIN->setCheckState(Qt::Checked);
+        QList<QWidget*> childWidgets = ui->groupBox->findChildren<QWidget*>();
+        for (QWidget* childWidget : childWidgets) {
+            childWidget->setEnabled(true);
+        }
         ui->CB_DS18B20_MAIN->setEnabled(false);
-        ui->Dial_Temperature->setEnabled(true);
-        emit ui->BtnClearGraph->clicked();
+        ui->CB_DS18B20_ADD->setEnabled(false);
+
         emit sig_WriteNewData(START, 0x00, 0);
+        clicke[BTN_TURNON] = !clicke[BTN_TURNON];
     }
     else
     {
@@ -229,13 +233,7 @@ void MainWindow::Slot_TurnOnBtn_clicked()
                                      "border-color: white; "
                                      "min-width: 10em; "
                                      "color: white}");
-        ui->ValueTargetTempLabel->setText("--");
-        ui->TemperatureValueText->setText("--");
-        ui->Dial_Temperature->setEnabled(false);
-        if(pause == true)
-            emit ui->BtnPause->clicked();
-        emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
-        clicke[BTN_TURNON] = !clicke[BTN_TURNON];
+        resetMainWindow();
     }
 }
 
@@ -291,7 +289,6 @@ void MainWindow::Slot_BtnExpandGraphicFeatures_clicked() {
 
         if(pause == true)
             emit ui->BtnPause->clicked();
-        emit ui->BtnClearGraph->clicked();
         clicke[BTN_EXPAND_GPAPH_FEATURES] = !clicke[BTN_EXPAND_GPAPH_FEATURES];
     }
 }
@@ -560,9 +557,68 @@ void MainWindow::Slot_SendSensorChoose() {
     data[2] = (uint8_t)ui->CB_NTC_ADD->isChecked();
     data[3] = (uint8_t)ui->CB_AHT20_ADD->isChecked();
 
-    emit sig_WriteNewData(CMD_SENSOR_CHOOSE, data, 4*sizeof(uint16_t));
+    emit sig_WriteNewData(CMD_SENSOR_CHOOSE, data, 4*sizeof(uint8_t));
 }
 
+
+void MainWindow::resetMainWindow() {
+
+    emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
+
+    my_com_this->first_in = false;
+
+    ui->ValueTargetTempLabel->setText("--");
+    ui->TemperatureValueText->setText("--");
+
+    ui->CB_DS18B20_MAIN->setCheckState(Qt::Checked);
+    ui->CB_DS18B20_ADD->setCheckState(Qt::Checked);
+    ui->CB_NTC_MAIN->setCheckState(Qt::Unchecked);
+    ui->CB_NTC_ADD->setCheckState(Qt::Unchecked);
+    ui->CB_AHT20_MAIN->setCheckState(Qt::Unchecked);
+    ui->CB_AHT20_ADD->setCheckState(Qt::Unchecked);
+
+    ui->CoefHeat1secLineEdit->setText("");
+    ui->CoefDeltaLineEdit->setText("");
+    ui->CoefHeatLineEdit->setText("");
+    ui->CoefMaintLineEdit->setText("");
+    ui->CoefTroomLineEdit->setText("");
+
+    ui->PidKpLineEdit->setText("");
+    ui->PidKiLineEdit->setText("");
+    ui->PidKdLineEdit->setText("");
+
+    ui->HeatTimeLineEdit->setText("");
+
+    ui->XMaxLineEdit->setText("");
+    ui->XMinLineEdit->setText("");
+    ui->YMaxLineEdit->setText("");
+    ui->YMinLineEdit->setText("");
+
+    ui->CB_TuneAuto->setCheckState(Qt::Checked);
+    ui->CB_TuneManual->setCheckState(Qt::Unchecked);
+
+    if(clicke[BTN_EXPAND_GPAPH_FEATURES] == true)
+        emit ui->BtnGraphicFeatures->clicked();
+
+    if(clicke[BTN_EXPAND_THERMOSTAT_FEATURES] == true)
+        emit ui->BtnThermostatFeatures->clicked();
+
+    if(clicke[BTN_SEND_GRAPH] == true)
+        emit ui->BtnDisplayGraphOnMC->clicked();
+
+    emit ui->BtnClearGraph->clicked();
+
+    for(uint8_t i = 0; i < AMOUNT_OF_BTN; i++)
+        clicke[i] = false;
+    pause = false;
+
+
+    QList<QWidget*> childWidgets = ui->groupBox->findChildren<QWidget*>();
+    for (QWidget* childWidget : childWidgets) {
+        childWidget->setEnabled(false);
+    }
+    ui->TurnOnBtn->setEnabled(true);
+}
 
 
 

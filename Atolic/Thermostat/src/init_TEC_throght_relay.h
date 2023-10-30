@@ -31,8 +31,8 @@ typedef struct Constants_Relay {
 	float heat_for_1sec;
 	float delta;
 }Constants_Relay;
-
 Constants_Relay constants_relay;
+
 void Constatns_Relay_clear();
 void Constants_Relay_set(double, double, double, double, double);
 

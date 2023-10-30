@@ -10,11 +10,12 @@
 #include <QPixmap>
 #include <QVector>
 #include <QElapsedTimer>
+#include <QTimer>
+#include <cstring>
 
 #define START_BYTE 0x01
 #define END_BYTE 0x09
-#define DS18B20_ADDRESS 0x43
-#define NTC_ADDRESS 0x44
+#define GET_TEMPERATURE_FROM_MC 0x42
 #define PWM_ADDRESS 0x45
 
 #define CMD_TURN_OFF 0x10
@@ -27,6 +28,9 @@
 #define CMD_DRAW_GRAPH 0x44
 #define CMD_DRAW_TEMPERATURE 0x45
 
+#define RESET_TEMPERATURE 255
+
+
 class com_port : public QObject
 {
     Q_OBJECT
@@ -34,6 +38,9 @@ public:
     QSerialPort *this_port;
     QByteArray* Tx_parcel;
     QElapsedTimer Timer;
+    QTimer* TimerForParcel;
+    QVector<QVector<uint8_t>> Matrix8bitForGraph;
+    bool first_in;
     com_port();
     ~com_port();
 
@@ -45,11 +52,13 @@ public:
 
 signals :
     void sig_Opened(const QString& port_name, int status_error);
-    void sig_TempertureInBuffer(const QByteArray& data, uint8_t sensor_number);
+    void sig_TempertureInBuffer(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state);
 public slots:
     void slot_GetData();
     void slot_SendGraph(QPixmap pixmap);
     void slot_SendData(const char &cmd, const uint8_t data[], const int size);
+    void slot_SendData(const char &cmd, const QByteArray data);
+    void slot_SendGraphPart();
 };
 
 #endif // COM_PORT_H

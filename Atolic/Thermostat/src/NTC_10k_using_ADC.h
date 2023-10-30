@@ -12,7 +12,7 @@
 #include "math.h"
 
 uint16_t ADC_value;
-double Ntc_Tmp;
+float Ntc_Tmp;
 uint16_t Ntc_R;
 uint8_t ADC_HAVE_DATA;
 

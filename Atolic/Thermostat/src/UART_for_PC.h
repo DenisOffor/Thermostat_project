@@ -16,8 +16,7 @@
 
 #define START_BYTE 0x01
 #define END_BYTE 0x09
-#define DS18B20_ADDRESS 0x43
-#define NTC_ADDRESS 0x44
+#define SEND_TEMPERATURE 0x42
 #define PWM_ADDRESS 0x45
 
 #define UART_CMD_TURN_OFF 0x10
@@ -48,7 +47,7 @@ void DMA1_Channel4_5_IRQHandler(void);
 void init_GPIO_for_USART();
 void init_USART();
 void init_DMA_for_USART();
-void UART_send_temperature(uint8_t* char_output, uint8_t char__output_size, uint8_t address);
+void UART_send_temperature(uint8_t* char_output, uint8_t char_output_size, uint8_t address);
 
 
 #endif /* UART_FOR_PC_H_ */

@@ -87,14 +87,14 @@ void init_DMA_for_USART() {
 	DMA1_Channel5->CCR |= DMA_CCR_EN;
 }
 
-void UART_send_temperature(uint8_t* char_output, uint8_t char__output_size, uint8_t address) {
+void UART_send_temperature(uint8_t* char_output, uint8_t char_output_size, uint8_t address) {
 	UART_tx_buf[0] = START_BYTE;
 	UART_tx_buf[1] = address;
-	for(int i = 0; i < char__output_size; i++)
+	for(int i = 0; i < char_output_size; i++)
 		UART_tx_buf[i + 2] = char_output[i];
-	UART_tx_buf[2 + char__output_size] = END_BYTE;
+	UART_tx_buf[2 + char_output_size] = END_BYTE;
 
-	DMA1_Channel4->CNDTR = char__output_size + 3;
+	DMA1_Channel4->CNDTR = char_output_size + 3;
 	DMA1_Channel4->CCR |= DMA_CCR_EN;
 	while(DMA1_Channel4->CCR & DMA_CCR_EN);
 	for(int i = 0; i < 300; i++);

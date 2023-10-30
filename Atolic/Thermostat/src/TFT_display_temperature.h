@@ -17,6 +17,8 @@
 #define AMOUNT_OF_PARCEL_FOR_GRAPH 10
 uint8_t amount_of_got_parcel;
 uint8_t parcel_state;
+uint8_t previous_full_width_curr_temp;
+uint8_t previous_full_width_aim_temp;
 
 #define AMOUNT_OF_PARCEL 4
 #define MAX_SIZE_OF_OUTPUT 7

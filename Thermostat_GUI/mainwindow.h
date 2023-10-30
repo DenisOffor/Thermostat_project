@@ -39,12 +39,13 @@ private:
     //bool for set program pause state (Graph will not clear, temperature measurment will be paused, aim temeprature also not clear)
     bool pause;
     void ShiftWidgets(int shift);
+    void resetMainWindow();
 
 public slots:
-    void slot_DisplayTemperatureValue(const QByteArray& data, uint8_t sensor_number);
-    void slot_PlotGraph(const QByteArray& data, uint8_t sensor_number);
+    void slot_DisplayTemperatureValue(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state);
+    void slot_PlotGraph(const QByteArray temp1, const QByteArray temp2,  QVector<uint8_t> sensors_state);
 signals :
-    void sig_WriteNewData(const uint8_t& cmd,const uint8_t data[], const int size);
+    void sig_WriteNewData(const uint8_t& cmd, const uint8_t data[], const int size);
     void sig_PlotGraph(QPixmap);
 
 private slots:
