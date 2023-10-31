@@ -6,13 +6,12 @@ int main(void)
 {
 	init_periphery();
 
-
 	while (1)
 	{
 		check_UART_cmd();
-		Display_data();
 		Measure_temperature();
-		if(program_status != STATUS_TURN_OFF && pid_state == PID_ON)
+		Display_data();
+		if(program_status != STATUS_TURN_OFF )//&& pid_state == PID_ON)
 				PID_regulation();
 		//Relay_regulating();
 	}

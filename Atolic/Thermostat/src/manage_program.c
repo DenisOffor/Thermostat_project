@@ -18,6 +18,12 @@ void TIM17_IRQHandler(void) {
 	send_temp_on_PC = 1;
 }
 
+void TIM14_IRQHandler(void) {
+	TIM14->SR &= ~TIM_SR_UIF;
+	TIM14->CR1 &= ~TIM_CR1_CEN;
+	pid_state = PID_ON;
+}
+
 void init_periphery() {
 	//	Write_data_to_flash(PAGE60_FOR_0_1_2_3, &mat_for_symbol1[0], 1024);
 	//	Write_data_to_flash(PAGE61_FOR_4_5_6_7, &mat_for_symbol2[0], 1024);
@@ -26,13 +32,11 @@ void init_periphery() {
 
 	init_clock();
 	init_ds();
+	NTC_init_periphery();
 	TFT_init();
-	TFT_reset_temperature();
 	init_USART();
 	init_periphery_relay_regulating();
-	NTC_init_periphery();
 	init_TIM3_for_PWM();
-
 	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
 	init_tim17_for_1sec();
 	reset_all_var();
@@ -269,6 +273,11 @@ void reset_all_var() {
 	rx_data_state = UART_DATA_WAITING;
 	rx_received_cmd = 0;
 	size_of_parcel = 0;
+	send_temp_on_PC = 1;
+
+	TIM3->CR1 &= TIM_CR1_CEN;
+	TIM3->CNT = 0;
+	TIM3->CR1 &= TIM_CR1_CEN;
 
 	TFT_clearAllDisplay(0x00,0x00,0x00);
 
@@ -320,4 +329,20 @@ void init_tim17_for_1sec() {
 
 	NVIC_EnableIRQ(TIM17_IRQn);
 	NVIC_SetPriority(TIM17_IRQn,5);
+
+	TIM17->CR1 |= TIM_CR1_CEN;
+}
+
+void init_tim14_for_3sec() {
+	RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
+
+	TIM14->ARR = 8000 * FREQ_MULTIPLIER_COEF;
+	TIM14->PSC = 3000;
+
+	TIM17->DIER |= TIM_DIER_UIE;
+
+	NVIC_EnableIRQ(TIM14_IRQn);
+	NVIC_SetPriority(TIM14_IRQn,5);
+
+	TIM17->CR1 |= TIM_CR1_CEN;
 }

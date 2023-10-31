@@ -2,7 +2,6 @@
 
 com_port::com_port()
 {
-    first_in = true;
     TimerForParcel = new QTimer();
     connect(TimerForParcel, &QTimer::timeout, this, &com_port::slot_SendGraphPart);
 
@@ -64,10 +63,6 @@ int com_port::SetUp()
 
 void com_port::slot_GetData()
 {
-   if(!first_in) {
-       first_in = true;
-       return;
-   }
     QByteArray temp_buffer = this_port->readAll();
     QByteArray temperature_ds;
     QByteArray temperature_ntc;

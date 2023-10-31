@@ -117,11 +117,11 @@ void MainWindow::slot_QDialReleased() {
 
 void MainWindow::slot_DisplayTemperatureValue(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state)
 {
-    if (sensors_state[0] == 1 && ui->CB_DS18B20_MAIN->isChecked()) {
+    if (sensors_state[0] == 1 && sensors_state[1] == 1) {
         QString StrTempepature = QString(temp1);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
-    if (sensors_state[0] == 2 && ui->CB_NTC_MAIN->isChecked()) {
+    if (sensors_state[0] == 2 && sensors_state[2] == 1) {
         QString StrTempepature = QString(temp2);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
@@ -564,8 +564,6 @@ void MainWindow::Slot_SendSensorChoose() {
 void MainWindow::resetMainWindow() {
 
     emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
-
-    my_com_this->first_in = false;
 
     ui->ValueTargetTempLabel->setText("--");
     ui->TemperatureValueText->setText("--");

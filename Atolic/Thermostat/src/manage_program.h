@@ -53,5 +53,6 @@ void PID_regulation();
 void reset_all_var();
 
 void init_tim17_for_1sec();
+void init_tim14_for_3sec();
 
 #endif /* MANAGE_PROGRAM_H_ */

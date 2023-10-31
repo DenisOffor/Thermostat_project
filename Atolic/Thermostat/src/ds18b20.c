@@ -15,7 +15,6 @@ uint16_t temp;
 void TIM2_IRQHandler() {
 	TIM2->SR &= ~TIM_SR_UIF;
 	TIM2->CR1 &= ~TIM_CR1_CEN;
-	pid_state = PID_ON;
 	ds18b20_cmd = TEMPERATURE_READING;
 }
 

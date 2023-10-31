@@ -40,7 +40,6 @@ public:
     QElapsedTimer Timer;
     QTimer* TimerForParcel;
     QVector<QVector<uint8_t>> Matrix8bitForGraph;
-    bool first_in;
     com_port();
     ~com_port();
 
