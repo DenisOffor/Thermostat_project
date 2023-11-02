@@ -33,7 +33,6 @@ typedef struct Constants_Relay {
 }Constants_Relay;
 Constants_Relay constants_relay;
 
-void Constatns_Relay_clear();
 void Constants_Relay_set(double, double, double, double, double);
 
 void TIM16_IRQHandler(void);

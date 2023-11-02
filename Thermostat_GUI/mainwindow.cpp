@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->BtnPause, &QPushButton::clicked, this, &MainWindow::Slot_PauseGraph);
     connect(ui->BtnStartHeat, &QPushButton::clicked, this, &MainWindow::Slot_HeatDuring);
     connect(ui->BtnPidCoefSend, &QPushButton::clicked, this, &MainWindow::Slot_SendPidCoef);
+    connect(ui->BtnRelayCoefSend, &QPushButton::clicked, this, &MainWindow::Slot_SendRelayCoef);
     connect(ui->BtnDisplayGraphOnMC, &QPushButton::clicked, this, &MainWindow::Slot_DisplayGraphOnMC);
     connect(ui->BtnSensorChooseSend, &QPushButton::clicked, this, &MainWindow::Slot_SendSensorChoose);
 
@@ -70,12 +71,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
+    uint8_t cmd = 0x00;
+    emit sig_WriteNewData(CMD_TURN_ON_OFF, &cmd, 1);
+    my_com_this->this_port->waitForBytesWritten(-1);
     event->accept();
 }
 
 MainWindow::~MainWindow()
 {
+    my_com_this->this_port->waitForBytesWritten(-1);
     delete my_com_this;
     delete TimerForGraph;
     delete MyGraph;
@@ -211,7 +215,8 @@ void MainWindow::Slot_TurnOnBtn_clicked()
         ui->CB_DS18B20_MAIN->setEnabled(false);
         ui->CB_DS18B20_ADD->setEnabled(false);
 
-        emit sig_WriteNewData(START, 0x00, 0);
+        uint8_t cmd = 0x01;
+        emit sig_WriteNewData(CMD_TURN_ON_OFF, &(cmd), 1);
         clicke[BTN_TURNON] = !clicke[BTN_TURNON];
     }
     else
@@ -413,8 +418,10 @@ void MainWindow::Slot_HeatDuring() {
 }
 
 void MainWindow::Slot_SendPidCoef() {
-    if(ui->PidKpLineEdit->text() == NULL || ui->PidKiLineEdit->text() == NULL || ui->PidKdLineEdit->text() == NULL)
+    if(ui->PidKpLineEdit->text() == NULL || ui->PidKiLineEdit->text() == NULL || ui->PidKdLineEdit->text() == NULL) {
         QMessageBox::warning(this,"Ошибка!", "Введите все коэффициенты");
+        return;
+    }
 
     uint16_t data[3];
     data[0] = ui->PidKpLineEdit->text().toUInt();
@@ -428,6 +435,30 @@ void MainWindow::Slot_SendPidCoef() {
     }
 
     emit sig_WriteNewData(CMD_SET_PID_COEF, parcel, 3*sizeof(uint16_t));
+}
+
+void MainWindow::Slot_SendRelayCoef() {
+    if(ui->RelayCoefMaintLineEdit->text() == NULL || ui->RelayCoefDeltaLineEdit->text() == NULL || ui->RelayCoefHeatLineEdit->text() == NULL ||
+        ui->RelayCoefHeat1secLineEdit == NULL || ui->RelayCoefTroomLineEdit == NULL) {
+        QMessageBox::warning(this,"Ошибка!", "Введите все коэффициенты");
+        return;
+    }
+
+    float data[5];
+    data[0] = ui->RelayCoefTroomLineEdit->text().toFloat();
+    data[1] = ui->RelayCoefMaintLineEdit->text().toFloat();
+    data[2] = ui->RelayCoefHeatLineEdit->text().toFloat();
+    data[3] = ui->RelayCoefHeat1secLineEdit->text().toFloat();
+    data[4] = ui->RelayCoefDeltaLineEdit->text().toFloat();
+
+    uint8_t parcel[5*sizeof(float)];
+    for(int i = 0; i < 5; i++) {
+        char *ptr = (char*)&(data[i]);
+        for (size_t shift = 0; shift < sizeof(float); ++shift)
+            parcel[sizeof(float)*i + shift] = ptr[shift];
+    }
+
+    emit sig_WriteNewData(CMD_SET_RELAY_COEF, parcel, 5*sizeof(float));
 }
 
 void MainWindow::ShiftWidgets(int shift) {
@@ -458,7 +489,9 @@ void MainWindow::Slot_DisplayGraphOnMC()
                                     " border-color: rgb(100,100,100); "
                                     "color: white; }");
         clicke[BTN_SEND_GRAPH] = !clicke[BTN_SEND_GRAPH];
-        emit sig_WriteNewData(CMD_DRAW_GRAPH, 0, 0);
+
+        uint8_t cmd = 0x02;
+        emit sig_WriteNewData(CMD_DRAW_CHOOSE, &cmd, 1);
         TimerForGraph->start(6000);
     }
     else
@@ -478,7 +511,8 @@ void MainWindow::Slot_DisplayGraphOnMC()
                                     "border-color: rgb(105,105,105); "
                                     "color: white;}");
         clicke[BTN_SEND_GRAPH] = !clicke[BTN_SEND_GRAPH];
-        emit sig_WriteNewData(CMD_DRAW_TEMPERATURE, 0, 0);
+        uint8_t cmd = 0x01;
+        emit sig_WriteNewData(CMD_DRAW_CHOOSE, &cmd, 1);
         TimerForGraph->stop();
     }
 }
@@ -560,10 +594,10 @@ void MainWindow::Slot_SendSensorChoose() {
     emit sig_WriteNewData(CMD_SENSOR_CHOOSE, data, 4*sizeof(uint8_t));
 }
 
-
 void MainWindow::resetMainWindow() {
 
-    emit sig_WriteNewData(CMD_TURN_OFF, 0x00, 0);
+    uint8_t cmd = 0x00;
+    emit sig_WriteNewData(CMD_TURN_ON_OFF, &cmd, 1);
 
     ui->ValueTargetTempLabel->setText("--");
     ui->TemperatureValueText->setText("--");
@@ -575,15 +609,15 @@ void MainWindow::resetMainWindow() {
     ui->CB_AHT20_MAIN->setCheckState(Qt::Unchecked);
     ui->CB_AHT20_ADD->setCheckState(Qt::Unchecked);
 
-    ui->CoefHeat1secLineEdit->setText("");
-    ui->CoefDeltaLineEdit->setText("");
-    ui->CoefHeatLineEdit->setText("");
-    ui->CoefMaintLineEdit->setText("");
-    ui->CoefTroomLineEdit->setText("");
+    ui->RelayCoefHeat1secLineEdit->setText("0.65");
+    ui->RelayCoefDeltaLineEdit->setText("0.3");
+    ui->RelayCoefHeatLineEdit->setText("0.006");
+    ui->RelayCoefMaintLineEdit->setText("0.006");
+    ui->RelayCoefTroomLineEdit->setText("27");
 
-    ui->PidKpLineEdit->setText("");
-    ui->PidKiLineEdit->setText("");
-    ui->PidKdLineEdit->setText("");
+    ui->PidKpLineEdit->setText("300");
+    ui->PidKiLineEdit->setText("4");
+    ui->PidKdLineEdit->setText("10");
 
     ui->HeatTimeLineEdit->setText("");
 

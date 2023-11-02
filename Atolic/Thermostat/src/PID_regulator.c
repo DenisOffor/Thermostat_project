@@ -42,10 +42,6 @@ void init_TIM3_for_PWM() {
 	NVIC_SetPriority(TIM3_IRQn,2);
 }
 
-void clear_Pid_Coef() {
-	pid_coef.Kp = pid_coef.Ki = pid_coef.Kd = 0;
-}
-
 void set_Pid_Coef(uint16_t Kp, uint16_t Ki, uint16_t Kd) {
 	pid_coef.Kp = Kp;
 	pid_coef.Ki = Ki;

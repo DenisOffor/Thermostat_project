@@ -9285,7 +9285,7 @@ color: rgb(255,255,255);</string>
       <string>Relay coeficients:</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="CoefHeat1secLineEdit">
+    <widget class="QLineEdit" name="RelayCoefHeat1secLineEdit">
      <property name="geometry">
       <rect>
        <x>45</x>
@@ -9791,7 +9791,7 @@ color: white</string>
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;a:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="CoefHeatLineEdit">
+    <widget class="QLineEdit" name="RelayCoefHeatLineEdit">
      <property name="geometry">
       <rect>
        <x>155</x>
@@ -10297,7 +10297,7 @@ color: white</string>
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;b:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="CoefMaintLineEdit">
+    <widget class="QLineEdit" name="RelayCoefMaintLineEdit">
      <property name="geometry">
       <rect>
        <x>260</x>
@@ -10803,7 +10803,7 @@ color: white</string>
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;c:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="CoefDeltaLineEdit">
+    <widget class="QLineEdit" name="RelayCoefDeltaLineEdit">
      <property name="geometry">
       <rect>
        <x>360</x>
@@ -11309,7 +11309,7 @@ color: white</string>
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt; 	&amp;#x3B4;:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="CoefTroomLineEdit">
+    <widget class="QLineEdit" name="RelayCoefTroomLineEdit">
      <property name="geometry">
       <rect>
        <x>500</x>
@@ -16431,14 +16431,14 @@ color: white
     <zorder>HeatTimeLineEdit</zorder>
     <zorder>BtnStartHeat</zorder>
     <zorder>RelayCoefLabel</zorder>
-    <zorder>CoefHeat1secLineEdit</zorder>
+    <zorder>RelayCoefHeat1secLineEdit</zorder>
     <zorder>CoefHeat1secLabel</zorder>
-    <zorder>CoefHeatLineEdit</zorder>
+    <zorder>RelayCoefHeatLineEdit</zorder>
     <zorder>CoefHeatLabel</zorder>
-    <zorder>CoefMaintLineEdit</zorder>
+    <zorder>RelayCoefMaintLineEdit</zorder>
     <zorder>CoefMaintLabel</zorder>
-    <zorder>CoefDeltaLineEdit</zorder>
-    <zorder>CoefTroomLineEdit</zorder>
+    <zorder>RelayCoefDeltaLineEdit</zorder>
+    <zorder>RelayCoefTroomLineEdit</zorder>
     <zorder>TempRoomLabel2</zorder>
     <zorder>Formula1Label</zorder>
     <zorder>Formula2Label</zorder>

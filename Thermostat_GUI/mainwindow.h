@@ -64,6 +64,7 @@ private slots:
     void Slot_PauseGraph();
     void Slot_HeatDuring();
     void Slot_SendPidCoef();
+    void Slot_SendRelayCoef();
     void Slot_DisplayGraphOnMC();
     void Slot_MainSensorChoose();
     void Slot_SendSensorChoose();

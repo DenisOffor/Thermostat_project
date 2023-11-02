@@ -90,14 +90,6 @@ void TIM16_set_wait_time(double seconds) {
 	TIM16->ARR = 1000 * seconds;
 }
 
-void Constatns_Relay_clear() {
-	constants_relay.room_temperature = 0;
-	constants_relay.maintenance_coef = 0;
-	constants_relay.heat_coef = 0;
-	constants_relay.heat_for_1sec = 0;
-	constants_relay.delta = 0;
-}
-
 void Constants_Relay_set(double room_temperature, double maintenance_coef, double heat_coef, double heat_for_1sec, double delta) {
 	constants_relay.room_temperature = room_temperature;
 	constants_relay.maintenance_coef = maintenance_coef;

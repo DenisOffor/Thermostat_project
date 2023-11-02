@@ -9,8 +9,8 @@
 #define TFT_DISPLAY_TEMPERATURE_H_
 
 #include "TFT_through_SPI.h"
-#include <stdlib.h>
 #include <math.h>
+#include <stdlib.h>
 
 #define NOT_ALL_PARCEL_HERE 0
 #define ALL_PARCEL_HERE 1

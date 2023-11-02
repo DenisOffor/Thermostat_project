@@ -30,7 +30,6 @@ typedef struct Pid_Coef {
 Pid_Coef pid_coef;
 
 void init_TIM3_for_PWM();
-void clear_Pid_Coef();
 void set_Pid_Coef(uint16_t Kp, uint16_t Ki, uint16_t Kd);
 
 #endif /* PID_REGULATOR_H_ */

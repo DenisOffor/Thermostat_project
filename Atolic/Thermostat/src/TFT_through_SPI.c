@@ -18,7 +18,6 @@ void TFT_init() {
   TFT_display_normal_mode();
   TFT_display_on();
   TFT_pixel_format();
-  TFT_clearAllDisplay(0x00, 0x00, 0x00);
 }
 
 void TFT_reset() {

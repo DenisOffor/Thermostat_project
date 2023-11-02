@@ -19,15 +19,14 @@
 #define SEND_TEMPERATURE 0x42
 #define PWM_ADDRESS 0x45
 
-#define UART_CMD_TURN_OFF 0x10
-#define UART_CMD_TURN_ON 0x11
+#define UART_CMD_TURN_ON_OFF 0x10
 #define UART_CMD_SET_AIM_TEMP 0x25
 #define UART_CMD_HEAT_DURING 0x31
 #define CMD_SENSOR_CHOOSE 0x32
+#define UART_CMD_SET_RELAY_COEF 0x40
 #define UART_CMD_SET_PID_COEF 0x41
 #define UART_GET_GRAPH_ON_DISPLAY 0x43
-#define CMD_DRAW_GRAPH 0x44
-#define CMD_DRAW_TEMPERATURE 0x45
+#define CMD_DRAW_CHOOSE 0x44
 
 uint8_t rx_data_state;
 uint8_t rx_received_cmd;

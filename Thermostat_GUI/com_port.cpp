@@ -227,6 +227,7 @@ void com_port::slot_SendGraphPart() {
     parcel_iter++;
     if(parcel_iter == 10) {
         TimerForParcel->stop();
+        this_port->waitForBytesWritten(200);
         parcel_iter = 0;
     }
 }

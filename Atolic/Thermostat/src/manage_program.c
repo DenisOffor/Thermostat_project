@@ -9,6 +9,7 @@
 
 PROGRAM_STATUS program_status = STATUS_TURN_OFF;
 uint8_t display_status = DISPLAY_TEMPERATURE;
+
 Sensors_State sensors_state;
 uint8_t send_temp_on_PC = 1;
 
@@ -30,14 +31,24 @@ void init_periphery() {
 	//	Write_data_to_flash(PAGE62_FOR_8_9_CELSIUM, &mat_for_symbol3[0], 1024);
 	//	Write_data_to_flash(PAGE63_FOR_DOT_MINUS, &mat_for_symbol4[0], 256);
 
+	//clock initialize
 	init_clock();
+
+	//tempperature sensors initialize
 	init_ds();
 	NTC_init_periphery();
+
 	TFT_init();
+	//USART for connection with PC
 	init_USART();
+	//relay regulating
 	init_periphery_relay_regulating();
-	init_TIM3_for_PWM();
 	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
+	//pid regulating
+	init_TIM3_for_PWM();
+	init_tim14_for_3sec();
+	set_Pid_Coef(300, 4, 10);
+	//
 	init_tim17_for_1sec();
 	reset_all_var();
 }
@@ -46,14 +57,11 @@ void check_UART_cmd() {
 	if(rx_data_state == UART_DATA_WAITING || rx_data_state == UART_CMD_RECEIVED)
 		return;
 	switch(rx_received_cmd) {
-
-		case UART_CMD_TURN_OFF:
-			program_status = STATUS_TURN_OFF;
-			reset_all_var();
-			break;
-
-		case UART_CMD_TURN_ON:
-			program_status = STATUS_START;
+		case UART_CMD_TURN_ON_OFF:
+			if(UART_data_buf[0] == 0x00)
+				program_status = STATUS_TURN_OFF;
+			if(UART_data_buf[0] == 0x01)
+				program_status = STATUS_START;
 			reset_all_var();
 			break;
 
@@ -63,6 +71,7 @@ void check_UART_cmd() {
 				temperatures.aim_temperature = temperatures.aim_temperature - 256;
 			if(temperatures.aim_temperature > temperatures.curr_temperature) {
 				TIM3->CR1 |= TIM_CR1_CEN;
+				TIM14->CR1 |= TIM_CR1_CEN;
 				//regulate_status = HEATING;
 			}
 			TIM16_set_wait_time(9.f);
@@ -73,25 +82,36 @@ void check_UART_cmd() {
 			TIM6_set_heat_time(UART_data_buf[0]);
 			break;
 
+		case CMD_SENSOR_CHOOSE:
+			Set_sensors_state(UART_data_buf[0], UART_data_buf[1], UART_data_buf[2], UART_data_buf[3]);
+			break;
+
+		case UART_CMD_SET_RELAY_COEF:
+			memcpy(&(constants_relay.room_temperature), &UART_data_buf[0], sizeof(float));
+			memcpy(&(constants_relay.maintenance_coef), &UART_data_buf[4], sizeof(float));
+			memcpy(&(constants_relay.heat_coef), &UART_data_buf[8], sizeof(float));
+			memcpy(&(constants_relay.heat_for_1sec), &UART_data_buf[12], sizeof(float));
+			memcpy(&(constants_relay.delta), &UART_data_buf[16], sizeof(float));
+			break;
+
 		case UART_CMD_SET_PID_COEF:
 			set_Pid_Coef((uint16_t)(UART_data_buf[0] | (UART_data_buf[1] << 8)) , (uint16_t)(UART_data_buf[2] | (UART_data_buf[3] << 8)),
 					(uint16_t)(UART_data_buf[4] | (UART_data_buf[5] << 8)));
 			break;
 
+
 		case UART_GET_GRAPH_ON_DISPLAY:
 			TFT_picture_Wrire_in_FLASH(&UART_data_buf[0]);
 			break;
 
-		case CMD_SENSOR_CHOOSE:
-			Set_sensors_state(UART_data_buf[0], UART_data_buf[1], UART_data_buf[2], UART_data_buf[3]);
-			break;
+		case CMD_DRAW_CHOOSE:
+			if(UART_data_buf[0] == 0x01) {
+				TFT_clearAllDisplay(0x00,0x00,0x00);
+				display_status = DISPLAY_TEMPERATURE;
+			}
 
-		case CMD_DRAW_GRAPH:
-			display_status = DISPLAY_GRAPH;
-			break;
-		case CMD_DRAW_TEMPERATURE:
-			TFT_clearAllDisplay(0x00,0x00,0x00);
-			display_status = DISPLAY_TEMPERATURE;
+			if(UART_data_buf[0] == 0x02)
+				display_status = DISPLAY_GRAPH;
 			break;
 
 	}
@@ -235,7 +255,7 @@ void PID_regulation() {
 
     errorDifferential = (errorCurrent - errorPrevious);
 
-    pwmDutyCycle = pid_coef.Kp * errorCurrent + pid_coef.Ki * errorIntegral + pid_coef.Kd * errorDifferential;
+    pwmDutyCycle = pid_coef.Kp * errorCurrent + pid_coef.Ki * errorIntegral - pid_coef.Kd * errorDifferential;
 
     if (pwmDutyCycle < PID_DUTY_CYCLE_MIN)
     {
@@ -250,40 +270,39 @@ void PID_regulation() {
     errorPrevious = errorCurrent;
 
     pid_state = PID_OFF;
+    TIM14->CNT = 0;
+    TIM14->CR1 |= TIM_CR1_CEN;
     uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
 	UART_send_temperature(&data[0], 2, PWM_ADDRESS);
 }
 
 void reset_all_var() {
-	TFT_reset_temperature();
-	Clear_sensors_state();
-	pid_state = PID_OFF;
-	TIM3->CR1 &= ~TIM_CR1_CEN;
+	//reset sensors
 	ds18b20_cmd = TEMPERATURE_CONVERTING;
-	Constatns_Relay_clear();
-	clear_Pid_Coef();
 	ADC_HAVE_DATA = 0;
-
-	previous_full_width_curr_temp = 0;
-	previous_full_width_aim_temp = 0;
-
+	Clear_sensors_state();
+	//reset display
+	TFT_clearAllDisplay(0x00,0x00,0x00);
+	TFT_reset_temperature();
+	display_status = DISPLAY_TEMPERATURE;
 	amount_of_got_parcel = 0;
 	parcel_state = NOT_ALL_PARCEL_HERE;
 
+	//PID reset
+	TIM3->CNT = 0;
+	TIM3->CR1 &= ~TIM_CR1_CEN;
+	pid_state = PID_OFF;
+	set_Pid_Coef(300, 4, 10);
+
+	//relay reset
+	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
+	regulate_status = WAITING;
+
+	//UART reset
 	rx_data_state = UART_DATA_WAITING;
 	rx_received_cmd = 0;
 	size_of_parcel = 0;
 	send_temp_on_PC = 1;
-
-	TIM3->CR1 &= TIM_CR1_CEN;
-	TIM3->CNT = 0;
-	TIM3->CR1 &= TIM_CR1_CEN;
-
-	TFT_clearAllDisplay(0x00,0x00,0x00);
-
-	display_status = DISPLAY_TEMPERATURE;
-
-	regulate_status = WAITING;
 }
 
 void init_clock() {
@@ -339,10 +358,10 @@ void init_tim14_for_3sec() {
 	TIM14->ARR = 8000 * FREQ_MULTIPLIER_COEF;
 	TIM14->PSC = 3000;
 
-	TIM17->DIER |= TIM_DIER_UIE;
+	TIM14->DIER |= TIM_DIER_UIE;
 
 	NVIC_EnableIRQ(TIM14_IRQn);
 	NVIC_SetPriority(TIM14_IRQn,5);
 
-	TIM17->CR1 |= TIM_CR1_CEN;
+	TIM14->CR1 |= TIM_CR1_CEN;
 }
