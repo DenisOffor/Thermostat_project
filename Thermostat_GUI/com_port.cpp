@@ -66,6 +66,7 @@ void com_port::slot_GetData()
     QByteArray temp_buffer = this_port->readAll();
     QByteArray temperature_ds;
     QByteArray temperature_ntc;
+    QByteArray temperature_aht;
     QVector<uint8_t> data;
 
     uint8_t lowByte = 0;
@@ -80,16 +81,18 @@ void com_port::slot_GetData()
         switch (buffer.at(0)) {
         case GET_TEMPERATURE_FROM_MC:
             buffer.remove(0,1); //remove cmd
-            float temp_ds, temp_ntc;
+            float temp_ds, temp_ntc, temp_aht;
             std::memcpy(&temp_ds, buffer.constData(), sizeof(float));
             std::memcpy(&temp_ntc, (buffer.constData() + 4), sizeof(float));
+            std::memcpy(&temp_aht, (buffer.constData() + 8), sizeof(float));
             temperature_ds.append(QString::number(temp_ds,'f', 2).toUtf8());
             temperature_ntc.append(QString::number(temp_ntc,'f', 2).toUtf8());
-            data.append((uint8_t)buffer.at(8));
-            data.append((uint8_t)buffer.at(9));
-            data.append((uint8_t)buffer.at(10));
-            data.append((uint8_t)buffer.at(11));
-            emit sig_TempertureInBuffer(temperature_ds,temperature_ntc, data);
+            temperature_aht.append(QString::number(temp_aht,'f', 2).toUtf8());
+            data.append((uint8_t)buffer.at(12));
+            data.append((uint8_t)buffer.at(13));
+            data.append((uint8_t)buffer.at(14));
+            data.append((uint8_t)buffer.at(15));
+            emit sig_TempertureInBuffer(temperature_ds, temperature_ntc, temperature_aht, data);
             break;
         case PWM_ADDRESS:
             buffer.remove(0,1);
@@ -121,16 +124,18 @@ void com_port::slot_GetData()
         switch (buffer.at(0)) {
         case GET_TEMPERATURE_FROM_MC:
             buffer.remove(0,1); //remove cmd
-            float temp_ds, temp_ntc;
+            float temp_ds, temp_ntc, temp_aht;
             std::memcpy(&temp_ds, buffer.constData(), sizeof(float));
             std::memcpy(&temp_ntc, (buffer.constData() + 4), sizeof(float));
+            std::memcpy(&temp_aht, (buffer.constData() + 8), sizeof(float));
             temperature_ds.append(QString::number(temp_ds,'f', 2).toUtf8());
             temperature_ntc.append(QString::number(temp_ntc,'f', 2).toUtf8());
-            data.append((uint8_t)buffer.at(8));
-            data.append((uint8_t)buffer.at(9));
-            data.append((uint8_t)buffer.at(10));
-            data.append((uint8_t)buffer.at(11));
-            emit sig_TempertureInBuffer(temperature_ds, temperature_ntc, data);
+            temperature_aht.append(QString::number(temp_aht,'f', 2).toUtf8());
+            data.append((uint8_t)buffer.at(12));
+            data.append((uint8_t)buffer.at(13));
+            data.append((uint8_t)buffer.at(14));
+            data.append((uint8_t)buffer.at(15));
+            emit sig_TempertureInBuffer(temperature_ds, temperature_ntc, temperature_aht, data);
             break;
         case PWM_ADDRESS:
             buffer.remove(0,1);

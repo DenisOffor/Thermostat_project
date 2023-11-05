@@ -13,6 +13,13 @@ void DMA1_Channel1_IRQHandler(void) {
 	ADC_HAVE_DATA = 1;
 }
 
+void NTC_measure_temperature() {
+	//if ADC not get value yet, return
+	if(ADC_HAVE_DATA == 0)
+		return;
+	temperatures.cur_temperature_NTC = NTC_get_temperature();
+}
+
 double NTC_get_temperature() {
 	Ntc_R = ( (NTC_UP_R) / ( (4095.0 / ADC_value) - 1) );
 	float Ntc_Ln = log(Ntc_R);
@@ -23,9 +30,7 @@ double NTC_get_temperature() {
 
 void NTC_init_periphery() {
 	ADC_init();
-	init_TIM15_as_TRGO();
 }
-
 
 void ADC_init() {
 	//RCC on for GPIOA
@@ -63,17 +68,6 @@ void ADC_init() {
 	while( (ADC1->ISR & ADC_ISR_ADRDY) != ADC_ISR_ADRDY);
 
 	ADC1->CR |= ADC_CR_ADSTART;
-}
-
-void init_TIM15_as_TRGO() {
-	RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;
-
-	TIM15->ARR = 8000;
-	TIM15->PSC = 1000 * FREQ_MULTIPLIER_COEF;
-
-	TIM15->CR2 |= TIM_CR2_MMS_1;
-
-	TIM15->CR1 |= TIM_CR1_CEN;
 }
 
 void DMA_for_ADC_init() {

@@ -10,9 +10,10 @@
 
 #include "TFT_display_temperature.h"
 #include "ds18b20.h"
+#include "NTC_10k_using_ADC.h"
+#include "AHT20.h"
 #include "init_TEC_throght_relay.h"
 #include "UART_for_PC.h"
-#include "NTC_10k_using_ADC.h"
 #include "PID_regulator.h"
 #include "string.h"
 
@@ -47,14 +48,12 @@ void init_clock();
 void check_UART_cmd();
 void Measure_temperature();
 void Display_data();
-void DS18B20_measure_temperature();
-void NTC_measure_temperature();
 void Relay_regulating();
 void PID_regulation();
 
 void reset_all_var();
 
-void init_tim17_for_1sec();
+void init_TIM15_as_TRGO_for_ADC_and_1sec_timer();
 void init_tim14_for_3sec();
 
 #endif /* MANAGE_PROGRAM_H_ */

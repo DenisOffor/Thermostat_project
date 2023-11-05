@@ -13,10 +13,10 @@ uint8_t display_status = DISPLAY_TEMPERATURE;
 Sensors_State sensors_state;
 uint8_t send_temp_on_PC = 1;
 
-void TIM17_IRQHandler(void) {
-	TIM17->SR &= ~TIM_SR_UIF;
-	TIM17->CR1 &= ~TIM_CR1_CEN;
+void TIM15_IRQHandler() {
+	TIM15->SR &= ~TIM_SR_UIF;
 	send_temp_on_PC = 1;
+	AHT_state = AHT_READ_CONVERSATION;
 }
 
 void TIM14_IRQHandler(void) {
@@ -37,6 +37,7 @@ void init_periphery() {
 	//tempperature sensors initialize
 	init_ds();
 	NTC_init_periphery();
+	I2C_for_AHT_init();
 
 	TFT_init();
 	//USART for connection with PC
@@ -49,7 +50,7 @@ void init_periphery() {
 	init_tim14_for_3sec();
 	set_Pid_Coef(300, 4, 10);
 	//
-	init_tim17_for_1sec();
+	init_TIM15_as_TRGO_for_ADC_and_1sec_timer();
 	reset_all_var();
 }
 
@@ -127,15 +128,15 @@ void Measure_temperature() {
 		DS18B20_measure_temperature();
 	if(sensors_state.NTC_as_add_sensor)
 		NTC_measure_temperature();
-	//if(sensors_state.AHT_as_add_sensor)
-	//	AHT_measure_temperature();
+	if(sensors_state.AHT_as_add_sensor)
+		AHT_measure_temperature();
 
 	if(sensors_state.main_sensor == 1)
 		temperatures.curr_temperature = temperatures.cur_temperature_DS;
 	if(sensors_state.main_sensor == 2)
 		temperatures.curr_temperature = temperatures.cur_temperature_NTC;
-	//if(sensors_state.main_sensor == 3)
-	//	temperatures.curr_temperature = temperatures.cur_temperature_AHT;
+	if(sensors_state.main_sensor == 3)
+		temperatures.curr_temperature = temperatures.cur_temperature_AHT;
 }
 
 void Display_data() {
@@ -155,21 +156,28 @@ void Display_data() {
 		    for (size_t i = 4; i < sizeof(float)*2; ++i)
 		    	temprerature_parcel[i] = ptr[i - 4];
 		}
-		temprerature_parcel[8] = sensors_state.main_sensor;
-		temprerature_parcel[9] = temperatures.cur_temperature_DS == RESET_TEMPERATURE ? 0 : sensors_state.DS_as_add_sensor;
-		temprerature_parcel[10] = temperatures.cur_temperature_NTC == RESET_TEMPERATURE ? 0 : sensors_state.NTC_as_add_sensor;
-		temprerature_parcel[11] = 0; // temperatures.cur_temperature_DS == RESET_TEMPERATURE ? 0 : sensors_state.DS_as_add_sensor;
 
-		UART_send_temperature(temprerature_parcel, 12, SEND_TEMPERATURE);
+		if(sensors_state.AHT_as_add_sensor && temperatures.cur_temperature_AHT != RESET_TEMPERATURE) {
+		    char *ptr = (char*)&(temperatures.cur_temperature_AHT);
+		    for (size_t i = 8; i < sizeof(float)*3; ++i)
+		    	temprerature_parcel[i] = ptr[i - 8];
+		}
+
+		temprerature_parcel[12] = sensors_state.main_sensor;
+		temprerature_parcel[13] = temperatures.cur_temperature_DS == RESET_TEMPERATURE ? 0 : sensors_state.DS_as_add_sensor;
+		temprerature_parcel[14] = temperatures.cur_temperature_NTC == RESET_TEMPERATURE ? 0 : sensors_state.NTC_as_add_sensor;
+		temprerature_parcel[15] = temperatures.cur_temperature_AHT == RESET_TEMPERATURE ? 0 : sensors_state.AHT_as_add_sensor;
+
+		UART_send_temperature(temprerature_parcel, 16, SEND_TEMPERATURE);
+
+		if(display_status == DISPLAY_TEMPERATURE) {
+			display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
+			display_temperature(temperatures.aim_temperature, AIM_TEMP);
+		}
+
 		send_temp_on_PC = 0;
-		TIM17->CNT = 0;
-		TIM17->CR1 |= TIM_CR1_CEN;
 	}
 
-	if(display_status == DISPLAY_TEMPERATURE) {
-		display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
-		display_temperature(temperatures.aim_temperature, AIM_TEMP);
-	}
 
 	if(display_status == DISPLAY_GRAPH) {
 		if(parcel_state == NOT_ALL_PARCEL_HERE)
@@ -178,28 +186,6 @@ void Display_data() {
 		parcel_state = NOT_ALL_PARCEL_HERE;
 		amount_of_got_parcel = 0;
 	}
-}
-
-void DS18B20_measure_temperature() {
-	switch(ds18b20_cmd) {
-		case TEMPERATURE_CONVERTING:
-			temperature_measurment_start();
-			ds18b20_cmd = WAITING_1SEC;
-			break;
-		case TEMPERATURE_READING:
-			temprepature_measurment_read();
-			ds18b20_cmd = TEMPERATURE_CONVERTING;
-			break;
-		default:
-			break;
-	}
-};
-
-void NTC_measure_temperature() {
-	//if ADC not get value yet, return
-	if(ADC_HAVE_DATA == 0)
-		return;
-	temperatures.cur_temperature_NTC = NTC_get_temperature();
 }
 
 void Relay_regulating() {
@@ -280,6 +266,7 @@ void reset_all_var() {
 	//reset sensors
 	ds18b20_cmd = TEMPERATURE_CONVERTING;
 	ADC_HAVE_DATA = 0;
+	AHT_state = AHT_START_CONVERSATION;
 	Clear_sensors_state();
 	//reset display
 	TFT_clearAllDisplay(0x00,0x00,0x00);
@@ -303,6 +290,10 @@ void reset_all_var() {
 	rx_received_cmd = 0;
 	size_of_parcel = 0;
 	send_temp_on_PC = 1;
+	// if turn off was in the middle of graph transfer, then need to reset DMA channel for command receive
+	DMA1_Channel5->CCR &= ~DMA_CCR_EN;
+	DMA1_Channel5->CNDTR = 4;
+	DMA1_Channel5->CCR |= DMA_CCR_EN;
 }
 
 void init_clock() {
@@ -338,20 +329,6 @@ void Set_sensors_state(uint8_t main_sensor, uint8_t DS_as_add_sensor, uint8_t NT
 	sensors_state.AHT_as_add_sensor = AHT_as_add_sensor;
 }
 
-void init_tim17_for_1sec() {
-	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
-
-	TIM17->ARR = 8000 * FREQ_MULTIPLIER_COEF;
-	TIM17->PSC = 1000;
-
-	TIM17->DIER |= TIM_DIER_UIE;
-
-	NVIC_EnableIRQ(TIM17_IRQn);
-	NVIC_SetPriority(TIM17_IRQn,5);
-
-	TIM17->CR1 |= TIM_CR1_CEN;
-}
-
 void init_tim14_for_3sec() {
 	RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
 
@@ -365,3 +342,18 @@ void init_tim14_for_3sec() {
 
 	TIM14->CR1 |= TIM_CR1_CEN;
 }
+
+void init_TIM15_as_TRGO_for_ADC_and_1sec_timer() {
+	RCC->APB2ENR |= RCC_APB2ENR_TIM15EN;
+
+	TIM15->ARR = 8000 * FREQ_MULTIPLIER_COEF;
+	TIM15->PSC = 1000;
+
+	TIM15->CR2 |= TIM_CR2_MMS_1;
+	TIM15->DIER |= TIM_DIER_UIE;
+	NVIC_EnableIRQ(TIM15_IRQn);
+	NVIC_SetPriority(TIM15_IRQn, 1);
+
+	TIM15->CR1 |= TIM_CR1_CEN;
+}
+

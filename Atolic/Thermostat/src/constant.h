@@ -27,6 +27,7 @@ typedef struct Temperatures {
 	float curr_temperature;
 	float cur_temperature_DS;
 	float cur_temperature_NTC;
+	float cur_temperature_AHT;
 	int aim_temperature;
 } Temperatures;
 

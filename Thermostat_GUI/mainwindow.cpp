@@ -119,14 +119,18 @@ void MainWindow::slot_QDialReleased() {
     emit sig_WriteNewData(CMD_SEND_AIM_TEMPERATURE, &temperature, sizeof(uint8_t));
 }
 
-void MainWindow::slot_DisplayTemperatureValue(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state)
+void MainWindow::slot_DisplayTemperatureValue(const QByteArray temp_ds, const QByteArray temp_ntc, const QByteArray temp_aht, QVector<uint8_t> sensors_state)
 {
     if (sensors_state[0] == 1 && sensors_state[1] == 1) {
-        QString StrTempepature = QString(temp1);
+        QString StrTempepature = QString(temp_ds);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
     if (sensors_state[0] == 2 && sensors_state[2] == 1) {
-        QString StrTempepature = QString(temp2);
+        QString StrTempepature = QString(temp_ntc);
+        ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
+    }
+    if (sensors_state[0] == 3 && sensors_state[3] == 1) {
+        QString StrTempepature = QString(temp_aht);
         ui->TemperatureValueText->setText(StrTempepature.toUtf8() + "°C");
     }
 }
@@ -140,13 +144,15 @@ void MainWindow::Slot_ClearGraph() {
     MyGraph->ClearGraphs();
 }
 
-void MainWindow::slot_PlotGraph(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state) {
+void MainWindow::slot_PlotGraph(const QByteArray temp_ds, const QByteArray temp_ntc, const QByteArray temp_aht, QVector<uint8_t> sensors_state) {
     if(clicke[BTN_EXPAND_GPAPH_FEATURES] && !pause)
     {
         if(sensors_state[1] == 1)
-            MyGraph->PlotGraph(temp1, ui->CB_TuneAuto->checkState(), 0);
+            MyGraph->PlotGraph(temp_ds, ui->CB_TuneAuto->checkState(), 0);
         if(sensors_state[2] == 1)
-            MyGraph->PlotGraph(temp2, ui->CB_TuneAuto->checkState(), 1);
+            MyGraph->PlotGraph(temp_ntc, ui->CB_TuneAuto->checkState(), 1);
+        if(sensors_state[3] == 1)
+            MyGraph->PlotGraph(temp_aht, ui->CB_TuneAuto->checkState(), 2);
 
         ui->XMinLineEdit->setText(QString::number(round(MyGraph->GetXRange().first)));
         ui->XMaxLineEdit->setText(QString::number(round(MyGraph->GetXRange().second)));

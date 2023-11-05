@@ -18,6 +18,21 @@ void TIM2_IRQHandler() {
 	ds18b20_cmd = TEMPERATURE_READING;
 }
 
+void DS18B20_measure_temperature() {
+	switch(ds18b20_cmd) {
+		case TEMPERATURE_CONVERTING:
+			temperature_measurment_start();
+			ds18b20_cmd = WAITING_1SEC;
+			break;
+		case TEMPERATURE_READING:
+			temprepature_measurment_read();
+			ds18b20_cmd = TEMPERATURE_CONVERTING;
+			break;
+		default:
+			break;
+	}
+}
+
 void init_ds() {
 	init_Gpio_for_ds();
 	init_tim1_for_us();

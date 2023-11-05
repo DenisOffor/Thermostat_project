@@ -42,8 +42,8 @@ private:
     void resetMainWindow();
 
 public slots:
-    void slot_DisplayTemperatureValue(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state);
-    void slot_PlotGraph(const QByteArray temp1, const QByteArray temp2,  QVector<uint8_t> sensors_state);
+    void slot_DisplayTemperatureValue(const QByteArray temp_ds, const QByteArray temp_ntc, const QByteArray temp_aht, QVector<uint8_t> sensors_state);
+    void slot_PlotGraph(const QByteArray temp_ds, const QByteArray temp_ntc, const QByteArray temp_aht, QVector<uint8_t> sensors_state);
 signals :
     void sig_WriteNewData(const uint8_t& cmd, const uint8_t data[], const int size);
     void sig_PlotGraph(QPixmap);

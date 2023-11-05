@@ -22,9 +22,9 @@ uint8_t ADC_HAVE_DATA;
 #define C 0.000000065f
 
 void DMA1_Channel1_IRQHandler(void);
+void NTC_measure_temperature();
 void NTC_init_periphery();
 double NTC_get_temperature();
-void init_TIM15_as_TRGO();
 void ADC_init();
 void DMA_for_ADC_init();
 

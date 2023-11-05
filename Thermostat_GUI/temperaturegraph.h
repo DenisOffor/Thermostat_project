@@ -8,7 +8,7 @@
 #include <QByteArray>
 #include "qcustomplot.h"
 
-#define AMOUT_OF_GRAPH 2
+#define AMOUT_OF_GRAPH 3
 
 class TemperatureGraph
 {

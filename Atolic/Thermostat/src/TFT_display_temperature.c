@@ -192,7 +192,7 @@ void TFT_draw_symbol(uint16_t start_position_in_arr, uint16_t end_position_in_ar
 
 void TFT_reset_temperature() {
 	temperatures.curr_temperature = temperatures.cur_temperature_DS
-			= temperatures.cur_temperature_NTC = temperatures.aim_temperature = RESET_TEMPERATURE;
+			= temperatures.cur_temperature_NTC = temperatures.cur_temperature_AHT = temperatures.aim_temperature = RESET_TEMPERATURE;
 }
 
 void TFT_picture_Wrire_in_FLASH(uint8_t* buf) {

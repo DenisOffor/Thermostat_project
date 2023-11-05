@@ -30,6 +30,7 @@ uint8_t ds_buff[9];
 uint16_t temp;
 
 void TIM2_IRQHandler();
+void DS18B20_measure_temperature();
 void init_ds();
 void init_Gpio_for_ds();
 void init_tim1_for_us();

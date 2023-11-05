@@ -6,6 +6,7 @@ TemperatureGraph::TemperatureGraph(QGroupBox* groupBox)
     plot = new QCustomPlot(groupBox);
     AddGraph(QColor(0,0,0), 0);
     AddGraph(QColor(20,100,20), 1);
+    AddGraph(QColor(30,50,70), 2);
     plot->setObjectName(QString::fromUtf8("Graph"));
     plot->setGeometry(QRect(1210, 60, 591, 441));
     plot->setStyleSheet(QString::fromUtf8("background-color: rgb(128,128,128);"));
@@ -104,6 +105,7 @@ void TemperatureGraph::ClearGraphs() {
     plot->clearGraphs();
     AddGraph(QColor(0,0,0), 0);
     AddGraph(QColor(20,100,20), 1);
+    AddGraph(QColor(30,50,70), 2);
     plot->replot();
 }
 

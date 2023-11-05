@@ -52,7 +52,7 @@ public:
 
 signals :
     void sig_Opened(const QString& port_name, int status_error);
-    void sig_TempertureInBuffer(const QByteArray temp1, const QByteArray temp2, QVector<uint8_t> sensors_state);
+    void sig_TempertureInBuffer(const QByteArray temp_ds, const QByteArray temp_ntc, const QByteArray temp_aht, QVector<uint8_t> sensors_state);
 public slots:
     void slot_GetData();
     void slot_SendGraph(QPixmap pixmap);
