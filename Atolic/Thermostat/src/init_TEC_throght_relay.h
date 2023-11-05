@@ -42,12 +42,12 @@ void init_GPIO_for_relay();
 void init_periphery_relay_regulating();
 void relay_on();
 void relay_off();
+void Relay_reset();
 
 void init_TIM6_for_Regulate_Time();
 void TIM6_set_heat_time(double seconds);
 
 void init_TIM16_for_wait_temp_set();
-void TIM16_IRQHandler(void);
 void TIM16_set_wait_time(double seconds);
 
 #endif /* INIT_TEC_THROGHT_RELAY_H_ */

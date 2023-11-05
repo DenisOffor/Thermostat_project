@@ -46,7 +46,7 @@ void DMA1_Channel4_5_IRQHandler(void);
 void init_GPIO_for_USART();
 void init_USART();
 void init_DMA_for_USART();
-void UART_send_temperature(uint8_t* char_output, uint8_t char_output_size, uint8_t address);
-
+void UART_send_data_to_PC(uint8_t* data, uint8_t data_size, uint8_t address);
+void UART_reset();
 
 #endif /* UART_FOR_PC_H_ */

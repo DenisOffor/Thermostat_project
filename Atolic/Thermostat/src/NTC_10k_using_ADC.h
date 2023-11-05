@@ -14,7 +14,7 @@
 uint16_t ADC_value;
 float Ntc_Tmp;
 uint16_t Ntc_R;
-uint8_t ADC_HAVE_DATA;
+uint8_t ADC_HAVE_DATA_FOR_NTC;
 
 #define NTC_UP_R 10000.0f
 #define A 0.001111f

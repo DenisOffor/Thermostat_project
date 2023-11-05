@@ -87,15 +87,26 @@ void init_DMA_for_USART() {
 	DMA1_Channel5->CCR |= DMA_CCR_EN;
 }
 
-void UART_send_temperature(uint8_t* char_output, uint8_t char_output_size, uint8_t address) {
+void UART_send_data_to_PC(uint8_t* data, uint8_t data_size, uint8_t address) {
 	UART_tx_buf[0] = START_BYTE;
 	UART_tx_buf[1] = address;
-	for(int i = 0; i < char_output_size; i++)
-		UART_tx_buf[i + 2] = char_output[i];
-	UART_tx_buf[2 + char_output_size] = END_BYTE;
+	for(int i = 0; i < data_size; i++)
+		UART_tx_buf[i + 2] = data[i];
+	UART_tx_buf[2 + data_size] = END_BYTE;
 
-	DMA1_Channel4->CNDTR = char_output_size + 3;
+	DMA1_Channel4->CNDTR = data_size + 3;
 	DMA1_Channel4->CCR |= DMA_CCR_EN;
 	while(DMA1_Channel4->CCR & DMA_CCR_EN);
 	for(int i = 0; i < 300; i++);
 }
+
+void UART_reset() {
+	rx_data_state = UART_DATA_WAITING;
+	rx_received_cmd = 0;
+	size_of_parcel = 0;
+	// if turn off was in the middle of graph transfer, then need to reset DMA channel for command receive
+	DMA1_Channel5->CCR &= ~DMA_CCR_EN;
+	DMA1_Channel5->CNDTR = 4;
+	DMA1_Channel5->CCR |= DMA_CCR_EN;
+}
+

@@ -15,6 +15,9 @@
 #define iMin -15 // ћинимальное значение интегратора
 #define iMax 15  // ћаксимальное значение интегратора
 
+#define PID_ON 1
+#define PID_OFF 0
+uint8_t pid_state;
 
 int pwmDutyCycle;
 float errorPrevious;
@@ -29,7 +32,10 @@ typedef struct Pid_Coef {
 } Pid_Coef;
 Pid_Coef pid_coef;
 
+void init_PID_regulation();
 void init_TIM3_for_PWM();
 void set_Pid_Coef(uint16_t Kp, uint16_t Ki, uint16_t Kd);
+void init_tim14_as_delay_unit();
+void PID_reset();
 
 #endif /* PID_REGULATOR_H_ */

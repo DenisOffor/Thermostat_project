@@ -17,28 +17,7 @@
 #include "PID_regulator.h"
 #include "string.h"
 
-#define DISPLAY_TEMPERATURE 0
-#define DISPLAY_GRAPH 1
-uint8_t display_status;
-
 uint8_t send_temp_on_PC;
-
-typedef enum PROGRAM_STATUS {
-	STATUS_TURN_OFF,
-	STATUS_START,
-	STATUS_WAIT_ACTION,
-	STATUS_HEATING,
-	STATUS_MAINTENANCE
-} PROGRAM_STATUS;
-PROGRAM_STATUS program_status;
-
-typedef struct Sensors_State{
-	uint8_t main_sensor;          //  Main sensor:
-	uint8_t DS_as_add_sensor;	  // 1 - DS,
-	uint8_t NTC_as_add_sensor;	  // 2 - NTC,
-	uint8_t AHT_as_add_sensor;    // 3 - AHT
-} Sensors_State;                  // In rest of uint8_t stored state of sensors (turn on or turn off)
-Sensors_State sensors_state;
 
 void Clear_sensors_state();
 void Set_sensors_state(uint8_t main_sensor, uint8_t DS_as_add_sensor, uint8_t NTC_as_add_sensor, uint8_t AHT_as_add_sensor);
@@ -51,9 +30,9 @@ void Display_data();
 void Relay_regulating();
 void PID_regulation();
 
+void Form_temperature_parcel(uint8_t* parcel);
 void reset_all_var();
 
 void init_TIM15_as_TRGO_for_ADC_and_1sec_timer();
-void init_tim14_for_3sec();
 
 #endif /* MANAGE_PROGRAM_H_ */

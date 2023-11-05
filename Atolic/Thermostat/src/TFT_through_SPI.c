@@ -11,7 +11,7 @@
 void TFT_init() {
   init_GPIO_for_SPI();
   SPI1_Master_init(8);
-  TFT_reset();
+  TFT_reset_PIN();
   for (int i = 0; i < 150000; i++);
 
   TFT_cmd_sleep_out();
@@ -20,7 +20,7 @@ void TFT_init() {
   TFT_pixel_format();
 }
 
-void TFT_reset() {
+void TFT_reset_PIN() {
 	PORT_SPI->ODR |= (1 << PIN_RST);
 }
 

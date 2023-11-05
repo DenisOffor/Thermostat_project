@@ -16,7 +16,7 @@
 void TFT_init();
 void DC_set();
 void DC_clear();
-void TFT_reset();
+void TFT_reset_PIN();
 void Set_DC_cmd();
 void Set_DC_data();
 void TFT_send_cmd(uint8_t cmd, uint8_t *data, uint8_t size);

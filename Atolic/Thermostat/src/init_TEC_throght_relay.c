@@ -36,23 +36,33 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 void relay_on() {
-	//GPIOB->ODR |= GPIO_ODR_7;
+	GPIOB->ODR |= GPIO_ODR_7;
 }
 
 void relay_off() {
-//	GPIOB->ODR &= ~GPIO_ODR_7;
+	GPIOB->ODR &= ~GPIO_ODR_7;
 }
 
 void init_periphery_relay_regulating() {
 	init_GPIO_for_relay();
 	init_TIM6_for_Regulate_Time();
 	init_TIM16_for_wait_temp_set();
+	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
 }
 
 void init_GPIO_for_relay() {
-	//RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
-	//GPIOB->MODER |= GPIO_MODER_MODER7_0;
-	//GPIOB->ODR &= ~GPIO_ODR_7;
+	RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+	GPIOB->MODER |= GPIO_MODER_MODER7_0;
+	GPIOB->ODR &= ~GPIO_ODR_7;
+}
+
+void Relay_reset() {
+	Constants_Relay_set(27,0.006,0.006,0.65,0.25);
+	regulate_status = WAITING;
+	TIM6->CNT = 0;
+	TIM6->CR1 &= ~TIM_CR1_CEN;
+	TIM16->CNT = 0;
+	TIM16->CR1 &= ~TIM_CR1_CEN;
 }
 
 void init_TIM6_for_Regulate_Time() {

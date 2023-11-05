@@ -50,8 +50,8 @@ void Symbol_distribution_add_char(uint8_t width, uint8_t symbol);
 void Choose_symbol_for_draw(uint8_t symbol, uint8_t start_row, uint8_t start_col);
 void TFT_draw_symbol(uint16_t start_position_in_arr, uint16_t end_position_in_arr, uint8_t symbol_width,
 		uint8_t symbol_height, uint8_t start_row, uint8_t start_col);
-void TFT_reset_temperature();
 void TFT_picture_Wrire_in_FLASH(uint8_t* buf);
 void TFT_draw_plot();
+void TFT_reset_program();
 
 #endif /* TFT_DISPLAY_TEMPERATURE_H_ */

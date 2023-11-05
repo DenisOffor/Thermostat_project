@@ -14,14 +14,9 @@
 #define FREQ_MULTIPLIER_COEF 5
 #define RESET_TEMPERATURE 255
 
-#define PID_ON 1
-#define PID_OFF 0
-uint8_t pid_state;
-
-//uint8_t mat_for_symbol1[1024];
-//uint8_t mat_for_symbol2[1024];
-//uint8_t mat_for_symbol3[1024];
-//uint8_t mat_for_symbol4[256];
+#define DISPLAY_TEMPERATURE 0
+#define DISPLAY_GRAPH 1
+uint8_t display_status;
 
 typedef struct Temperatures {
 	float curr_temperature;
@@ -30,7 +25,25 @@ typedef struct Temperatures {
 	float cur_temperature_AHT;
 	int aim_temperature;
 } Temperatures;
-
 Temperatures temperatures;
+
+typedef struct Sensors_State{
+	uint8_t main_sensor;          //  Main sensor:
+	uint8_t DS_as_add_sensor;	  // 1 - DS,
+	uint8_t NTC_as_add_sensor;	  // 2 - NTC,
+	uint8_t AHT_as_add_sensor;    // 3 - AHT
+} Sensors_State;                  // In rest of uint8_t stored state of sensors (turn on or turn off)
+Sensors_State sensors_state;
+
+typedef enum PROGRAM_STATUS {
+	STATUS_TURN_OFF,
+	STATUS_START,
+	STATUS_WAIT_ACTION,
+	STATUS_HEATING,
+	STATUS_MAINTENANCE
+} PROGRAM_STATUS;
+PROGRAM_STATUS program_status;
+
+void Reset_temperatures();
 
 #endif /* CONSTANT_H_ */

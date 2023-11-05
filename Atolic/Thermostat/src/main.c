@@ -6,7 +6,6 @@
 int main(void)
 {
 	init_periphery();
-	//AHT_measure_temperature();
 
 	while (1)
 	{
