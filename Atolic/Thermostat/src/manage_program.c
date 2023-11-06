@@ -7,11 +7,13 @@
 
 #include "manage_program.h"
 
-uint8_t send_temp_on_PC = 0;
+uint8_t Second_pass_switcherFirst = 0;
+uint8_t Second_pass_switcherSecond = 0;
 
 void TIM15_IRQHandler() {
 	TIM15->SR &= ~TIM_SR_UIF;
-	send_temp_on_PC = 1;
+	Second_pass_switcherFirst = 1;
+	Second_pass_switcherSecond = 1;
 	AHT_state = AHT_READ_CONVERSATION;
 }
 
@@ -94,11 +96,23 @@ void check_UART_cmd() {
 				regulate_mode = STEP_HEAT;
 				Step_heat_var.aim_temperature = UART_data_buf[1];
 				Step_heat_var.step = UART_data_buf[2];
+				Step_heat_var.tau_wait = UART_data_buf[3];
 				PID_start();
 				Relay_off();
+				TIM2->CNT = 0;
 				//calc intermediate temperature first time and increment CNT in order not to calc second time for 0 % 60 = 0;
 				Calc_Intermediate_temperature();
-				TIM2->CNT = 1;
+			}
+
+			if(UART_data_buf[0] == 4) {
+				regulate_mode = HEAT_IN_TIME;
+				Heat_in_time_var.aim_temperature = UART_data_buf[1];
+				Heat_in_time_var.tau_heat = UART_data_buf[2];
+				PID_stop();
+				Relay_off();
+
+				Calc_aim_sec_heat();
+				Calc_Begin_DutyCycle();
 			}
 
 			break;
@@ -173,7 +187,7 @@ void Display_data() {
 		return;
 
 	//each 1 sec send temperatures on PC and display temperature on TFT if it chosen
-	if(send_temp_on_PC == 1) {
+	if(Second_pass_switcherFirst == 1) {
 		uint8_t temprerature_parcel[12];
 		Form_temperature_parcel(&temprerature_parcel[0]);
 		UART_send_data_to_PC(temprerature_parcel, 16, SEND_TEMPERATURE);
@@ -183,7 +197,7 @@ void Display_data() {
 			display_temperature(temperatures.aim_temperature, AIM_TEMP);
 		}
 
-		send_temp_on_PC = 0;
+		Second_pass_switcherFirst = 0;
 	}
 
 	//else if graph chosen then temperature already sent, just need to display graph
@@ -197,7 +211,7 @@ void Display_data() {
 }
 
 void TemperatureRegulating() {
-	if(program_status == STATUS_TURN_OFF || temperatures.aim_temperature == RESET_TEMPERATURE)
+	if(program_status == STATUS_TURN_OFF)
 		return;
 
 	switch(regulate_mode) {
@@ -213,18 +227,18 @@ void TemperatureRegulating() {
 		case PID:
 			if(pid_state == PID_ON) {
 				PID_regulation(temperatures.curr_temperature, temperatures.aim_temperature);
-				//debug
-				uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
-				UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
 			}
 			break;
 		case STEP_HEAT:
 			Calc_Intermediate_temperature();
 			if(pid_state == PID_ON) {
 				PID_regulation(temperatures.curr_temperature, Step_heat_var.intermediate_temperature);
-				//debug
-				uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
-				UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
+			}
+			break;
+		case HEAT_IN_TIME:
+			if(Second_pass_switcherSecond == 1) {
+				Regulate_Duty_for_Heat_InTime();
+				Second_pass_switcherSecond = 0;
 			}
 			break;
 	}
@@ -251,8 +265,6 @@ void reset_all_var() {
 
 	//UART reset
 	UART_reset();
-
-	send_temp_on_PC = 1;
 }
 
 void init_clock() {

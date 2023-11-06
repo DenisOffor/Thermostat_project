@@ -143,7 +143,10 @@ void com_port::slot_GetData()
             break;
         case DEBUG:
             buffer.remove(0,1);
-            qDebug() << "PWM cycle: " << buffer.toInt() << "\n";
+            lowByte = static_cast<uint8_t>(buffer.at(1)); // Младший байт
+            highByte = static_cast<uint8_t>(buffer.at(0)); // Старший байт
+            number = (static_cast<uint16_t>(highByte) << 8) | lowByte;
+            qDebug() << "PWM cycle: " << number << "\n";
             break;
         default:
             return;

@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->SetPointTemperatureValueText->hide();
     ui->SetTempLabel->hide();
 
-    this->setFixedSize(600,800);
+    this->setFixedSize(600,880);
     ShiftWidgets(-600);
 
     ui->BtnSaveAs->setIcon(ui->BtnSaveAs->style()->standardIcon(QStyle::SP_DialogSaveButton));
@@ -64,6 +64,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->CB_ModeRelay, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
     connect(ui->CB_ModePID, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
     connect(ui->CB_ModeStepHeating, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
+    connect(ui->CB_ModeHeatInTime, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
 
 
     connect(ui->XMinLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
@@ -270,10 +271,10 @@ void MainWindow::Slot_BtnExpandGraphicFeatures_clicked() {
                                               "color: white; }");
 
         if(clicke[BTN_EXPAND_THERMOSTAT_FEATURES] == false) {
-            this->setFixedSize(1230,800);
+            this->setFixedSize(1230,880);
         }
         else {
-            this->setFixedSize(1830,800);
+            this->setFixedSize(1830,880);
         }
 
         clicke[BTN_EXPAND_GPAPH_FEATURES] = !clicke[BTN_EXPAND_GPAPH_FEATURES];
@@ -296,10 +297,10 @@ void MainWindow::Slot_BtnExpandGraphicFeatures_clicked() {
                                               "color: white;}");
 
         if(clicke[BTN_EXPAND_THERMOSTAT_FEATURES] == false) {
-            this->setFixedSize(600,800);
+            this->setFixedSize(600,880);
         }
         else {
-            this->setFixedSize(1200,800);
+            this->setFixedSize(1200,880);
         }
 
         if(pause == true)
@@ -329,11 +330,11 @@ void MainWindow::Slot_BtnExpandThermostatFeatures_clicked() {
         clicke[BTN_EXPAND_THERMOSTAT_FEATURES] = !clicke[BTN_EXPAND_THERMOSTAT_FEATURES];
         if(clicke[BTN_EXPAND_GPAPH_FEATURES] == false) {
             ShiftWidgets(600);
-            this->setFixedSize(1200,800);
+            this->setFixedSize(1200,880);
         }
         else {
             ShiftWidgets(600);
-            this->setFixedSize(1830,800);
+            this->setFixedSize(1830,880);
         }
         this->setGeometry(this->x() - 599, this->y() + 31, this->width(), this->height());
         this->repaint();
@@ -361,11 +362,11 @@ void MainWindow::Slot_BtnExpandThermostatFeatures_clicked() {
         clicke[BTN_EXPAND_THERMOSTAT_FEATURES] = !clicke[BTN_EXPAND_THERMOSTAT_FEATURES];
         if(clicke[BTN_EXPAND_GPAPH_FEATURES] == false) {
             ShiftWidgets(-600);
-            this->setFixedSize(600,800);
+            this->setFixedSize(600,880);
         }
         else {
             ShiftWidgets(-600);
-            this->setFixedSize(1230,800);
+            this->setFixedSize(1230,880);
         }
         this->setGeometry(this->x() + 601, this->y() + 31, this->width(), this->height());
         this->repaint();
@@ -606,21 +607,32 @@ void MainWindow::Slot_RegulationModeChoose() {
         ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
         ui->CB_ModePID->setCheckState(Qt::Unchecked);
         ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
+        ui->CB_ModeHeatInTime->setCheckState(Qt::Unchecked);
     }
 
     if(changedCheckbox == ui->CB_ModeRelay) {
         ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
         ui->CB_ModePID->setCheckState(Qt::Unchecked);
         ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
+        ui->CB_ModeHeatInTime->setCheckState(Qt::Unchecked);
     }
 
     if(changedCheckbox == ui->CB_ModePID) {
         ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
         ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
         ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
+        ui->CB_ModeHeatInTime->setCheckState(Qt::Unchecked);
     }
 
     if(changedCheckbox == ui->CB_ModeStepHeating) {
+        ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
+        ui->CB_ModePID->setCheckState(Qt::Unchecked);
+        ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
+        ui->CB_ModeHeatInTime->setCheckState(Qt::Unchecked);
+    }
+
+    if(changedCheckbox == ui->CB_ModeHeatInTime) {
+        ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
         ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
         ui->CB_ModePID->setCheckState(Qt::Unchecked);
         ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
@@ -653,6 +665,8 @@ void MainWindow::resetMainWindow() {
     ui->CB_ModeFreeControl->setCheckState(Qt::Checked);
     ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
     ui->CB_ModePID->setCheckState(Qt::Unchecked);
+    ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
+    ui->CB_ModeHeatInTime->setCheckState(Qt::Unchecked);
 
     ui->CB_DS18B20_MAIN->setCheckState(Qt::Checked);
     ui->CB_DS18B20_ADD->setCheckState(Qt::Checked);
@@ -705,8 +719,8 @@ void MainWindow::resetMainWindow() {
 }
 
 void MainWindow::Slot_RegulationModeSend() {
-    uint8_t data[3];
-    uint8_t parcel_size;
+    uint8_t data[4];
+    uint8_t parcel_size = 0;
 
     if(ui->CB_ModeFreeControl->isChecked()) {
         data[0] = 0;
@@ -724,13 +738,25 @@ void MainWindow::Slot_RegulationModeSend() {
     }
 
     if(ui->CB_ModeStepHeating->isChecked()) {
-       if(ui->StepHeatTsetLineEdit->text() == NULL || ui->StepHeatStepLineEdit->text() == NULL) {
+       if(ui->StepHeatTsetLineEdit->text() == NULL || ui->StepHeatStepLineEdit->text() == NULL || ui->StepHeatTauWaitLineEdit->text() == NULL) {
             QMessageBox::warning(this,"Ошибка!", "Введите все коэффициенты");
             return;
        }
        data[0] = 3;
        data[1] = ui->StepHeatTsetLineEdit->text().toInt();
        data[2] = ui->StepHeatStepLineEdit->text().toInt();
+       data[3] = ui->StepHeatTauWaitLineEdit->text().toInt();
+       parcel_size = 4;
+    }
+
+    if(ui->CB_ModeHeatInTime->isChecked()) {
+       if(ui->StepHeatInTimeTsetLabel->text() == NULL || ui->HeatInTimeTimeLineEdit->text() == NULL) {
+            QMessageBox::warning(this,"Ошибка!", "Введите все коэффициенты");
+            return;
+       }
+       data[0] = 4;
+       data[1] = ui->HeatInTimeTsetLineEdit->text().toInt();
+       data[2] = ui->HeatInTimeTimeLineEdit->text().toInt();
        parcel_size = 3;
     }
 

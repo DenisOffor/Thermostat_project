@@ -63,6 +63,8 @@ void PID_regulation(float cur_temp, float aim_temp) {
 void PID_start() {
 	TIM3->CR1 |= TIM_CR1_CEN;
 	TIM14->CR1 |= TIM_CR1_CEN;
+	errorIntegral = 0;
+	errorPrevious = 0;
 }
 
 void PID_stop() {

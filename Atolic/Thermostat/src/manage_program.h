@@ -23,6 +23,7 @@
 #ifndef MANAGE_PROGRAM_H_
 #define MANAGE_PROGRAM_H_
 
+#include <Step_and_InTime_Heat.h>
 #include "TFT_display_temperature.h"
 #include "ds18b20.h"
 #include "NTC_10k_using_ADC.h"
@@ -30,10 +31,11 @@
 #include "init_TEC_throght_relay.h"
 #include "UART_for_PC.h"
 #include "PID_regulator.h"
-#include "Step_Heat.h"
+#include "Step_and_InTime_Heat.h"
 #include "string.h"
 
-uint8_t send_temp_on_PC;
+uint8_t Second_pass_switcherFirst;
+uint8_t Second_pass_switcherSecond;
 
 void Clear_sensors_state();
 void Set_sensors_state(uint8_t main_sensor, uint8_t DS_as_add_sensor, uint8_t NTC_as_add_sensor, uint8_t AHT_as_add_sensor);
