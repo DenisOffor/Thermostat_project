@@ -29,6 +29,53 @@ void TIM3_IRQHandler(void) {
 	TIM3->CCR1 = 1000 - (uint16_t)pwmDutyCycle;
 }
 
+void PID_regulation() {
+	if(!(TIM3->CR1 & TIM_CR1_CEN))
+		return;
+
+    errorCurrent = temperatures.aim_temperature - temperatures.curr_temperature;
+
+    if ((((pid_coef.Ki * errorIntegral) <= PID_DUTY_CYCLE_MAX) && (errorCurrent >= 0)) ||
+        (((pid_coef.Ki * errorIntegral) >= PID_DUTY_CYCLE_MIN) && (errorCurrent < 0)))
+    {
+      errorIntegral += errorCurrent;
+    }
+
+    errorDifferential = (errorCurrent - errorPrevious);
+
+    pwmDutyCycle = pid_coef.Kp * errorCurrent + pid_coef.Ki * errorIntegral + pid_coef.Kd * errorDifferential;
+
+    if (pwmDutyCycle < PID_DUTY_CYCLE_MIN)
+    {
+      pwmDutyCycle = PID_DUTY_CYCLE_MIN;
+    }
+
+    if (pwmDutyCycle > PID_DUTY_CYCLE_MAX)
+    {
+      pwmDutyCycle = PID_DUTY_CYCLE_MAX;
+    }
+
+    errorPrevious = errorCurrent;
+
+    pid_state = PID_OFF;
+
+    TIM14->CNT = 0;
+    TIM14->CR1 |= TIM_CR1_CEN;
+}
+
+void PID_start() {
+	TIM3->CR1 |= TIM_CR1_CEN;
+	TIM14->CR1 |= TIM_CR1_CEN;
+}
+
+void PID_stop() {
+	TIM3->CNT = 0;
+	TIM3->CR1 &= ~TIM_CR1_CEN;
+	TIM14->CNT = 0;
+	TIM14->CR1 &= ~TIM_CR1_CEN;
+	pid_state = PID_OFF;
+}
+
 void init_PID_regulation() {
 	init_TIM3_for_PWM();
 	init_tim14_as_delay_unit();
@@ -59,7 +106,7 @@ void init_tim14_as_delay_unit() {
 	RCC->APB1ENR |= RCC_APB1ENR_TIM14EN;
 
 	TIM14->ARR = 8000 * FREQ_MULTIPLIER_COEF;
-	TIM14->PSC = 3000;
+	TIM14->PSC = 2000;
 
 	TIM14->DIER |= TIM_DIER_UIE;
 

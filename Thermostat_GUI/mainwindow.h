@@ -68,6 +68,8 @@ private slots:
     void Slot_DisplayGraphOnMC();
     void Slot_MainSensorChoose();
     void Slot_SendSensorChoose();
+    void Slot_RegulationModeChoose();
+    void Slot_RegulationModeSend();
     void Slot_GetGraph();
 };
 #endif // MAINWINDOW_H

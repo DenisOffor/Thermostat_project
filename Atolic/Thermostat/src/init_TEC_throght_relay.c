@@ -19,7 +19,6 @@ void TIM16_IRQHandler(void) {
 			return;
 		}
 		regulate_status = MAINTENANCE;
-		TIM16_set_wait_time(4.5f);
 	}
 }
 
@@ -27,12 +26,62 @@ void TIM6_DAC_IRQHandler(void) {
 	TIM6->SR &= ~TIM_SR_UIF;
 	TIM6->CR1 &= ~TIM_CR1_CEN;
 	relay_off();
-	if(temperatures.aim_temperature == 255)
-		regulate_status = WAITING;
+	//if it was heat during time -> just off relay and wait for new action
+	if(program_status == STATUS_HEATING_DURING_TIME)
+		program_status = STATUS_WAIT_ACTION;
+
+	//if it was heat using relay -> set unit of delay and wait
 	if(regulate_status == PROCESS){
 		regulate_status = WAIT_TEMPERATURE_SET;
 		TIM16->CR1 |= TIM_CR1_CEN;
 	}
+}
+
+void Relay_regulating() {
+	if(program_status == STATUS_TURN_OFF)
+		return;
+
+	double time_heat = 0;
+
+	switch(regulate_status) {
+		case WAITING:
+			relay_off();
+			break;
+		case MAINTENANCE:
+			if(temperatures.curr_temperature < (temperatures.aim_temperature -
+						(constants_relay.delta - (temperatures.aim_temperature - constants_relay.room_temperature)*constants_relay.maintenance_coef) )) {
+
+				TIM6->ARR = 1000 * (1 + (temperatures.aim_temperature - constants_relay.room_temperature)*5*constants_relay.maintenance_coef);
+				relay_on();
+				TIM6->CR1 |= TIM_CR1_CEN;
+				regulate_status = PROCESS;
+			}
+			break;
+		case HEATING:
+			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature)
+					/ (constants_relay.heat_for_1sec - (temperatures.aim_temperature - constants_relay.room_temperature)*constants_relay.heat_coef);
+
+			TIM6_set_heat_time(time_heat);
+			relay_on();
+			TIM6->CR1 |= TIM_CR1_CEN;
+			regulate_status = PROCESS;
+			break;
+
+		default:
+			break;
+	}
+}
+
+void Relay_start() {
+	regulate_status = HEATING;
+}
+
+void Relay_off() {
+	regulate_status = WAITING;
+	TIM6->CNT = 0;
+	TIM6->CR1 &= ~TIM_CR1_CEN;
+	TIM16->CNT = 0;
+	TIM16->CR1 &= ~TIM_CR1_CEN;
 }
 
 void relay_on() {
@@ -85,9 +134,9 @@ void TIM6_set_heat_time(double seconds) {
 void init_TIM16_for_wait_temp_set() {
 	RCC->APB2ENR |= RCC_APB2ENR_TIM16EN;
 
-	//9 sec
+	//4.5 sec
 	TIM16->PSC = 8000 * FREQ_MULTIPLIER_COEF;
-	TIM16->ARR = 9000;
+	TIM16->ARR = 4500;
 
 	TIM16->DIER |= TIM_DIER_UIE;
 	NVIC_EnableIRQ(TIM16_IRQn);

@@ -18,7 +18,6 @@ typedef enum REGULATE_STATUS{
 	WAITING,
 	MAINTENANCE,
 	HEATING,
-	HEATING_DURING_TIME,
 	PROCESS,
 	WAIT_TEMPERATURE_SET,
 } REGULATE_STATUS;
@@ -38,8 +37,11 @@ void Constants_Relay_set(double, double, double, double, double);
 void TIM16_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
 
+void Relay_regulating();
 void init_GPIO_for_relay();
 void init_periphery_relay_regulating();
+void Relay_start();
+void Relay_off();
 void relay_on();
 void relay_off();
 void Relay_reset();

@@ -50,15 +50,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->BtnRelayCoefSend, &QPushButton::clicked, this, &MainWindow::Slot_SendRelayCoef);
     connect(ui->BtnDisplayGraphOnMC, &QPushButton::clicked, this, &MainWindow::Slot_DisplayGraphOnMC);
     connect(ui->BtnSensorChooseSend, &QPushButton::clicked, this, &MainWindow::Slot_SendSensorChoose);
+    connect(ui->BtnRegulationModeSend, &QPushButton::clicked, this, &MainWindow::Slot_RegulationModeSend);
 
     connect(ui->CB_TuneAuto, &QCheckBox::stateChanged, this, &MainWindow::Slot_CB_AutoPushed);
     connect(ui->CB_TuneManual, &QCheckBox::stateChanged, this, &MainWindow::Slot_CB_ManualPushed);
-    connect(ui->CB_DS18B20_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
-    connect(ui->CB_AHT20_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
-    connect(ui->CB_NTC_MAIN, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
-    connect(ui->CB_DS18B20_ADD, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
-    connect(ui->CB_AHT20_ADD, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
-    connect(ui->CB_NTC_ADD, &QCheckBox::stateChanged, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_DS18B20_MAIN, &QCheckBox::released, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_AHT20_MAIN, &QCheckBox::released, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_NTC_MAIN, &QCheckBox::released, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_DS18B20_ADD, &QCheckBox::released, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_AHT20_ADD, &QCheckBox::released, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_NTC_ADD, &QCheckBox::released, this, &MainWindow::Slot_MainSensorChoose);
+    connect(ui->CB_ModeFreeControl, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
+    connect(ui->CB_ModeRelay, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
+    connect(ui->CB_ModePID, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
 
     connect(ui->XMinLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
     connect(ui->XMaxLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
@@ -218,8 +222,6 @@ void MainWindow::Slot_TurnOnBtn_clicked()
         for (QWidget* childWidget : childWidgets) {
             childWidget->setEnabled(true);
         }
-        ui->CB_DS18B20_MAIN->setEnabled(false);
-        ui->CB_DS18B20_ADD->setEnabled(false);
 
         uint8_t cmd = 0x01;
         emit sig_WriteNewData(CMD_TURN_ON_OFF, &(cmd), 1);
@@ -498,7 +500,7 @@ void MainWindow::Slot_DisplayGraphOnMC()
 
         uint8_t cmd = 0x02;
         emit sig_WriteNewData(CMD_DRAW_CHOOSE, &cmd, 1);
-        TimerForGraph->start(6000);
+        TimerForGraph->start(8000);
     }
     else
     {
@@ -542,46 +544,73 @@ void MainWindow::Slot_GetGraph() {
 }
 
 void MainWindow::Slot_MainSensorChoose() {
-    if(ui->CB_DS18B20_MAIN->isChecked() && ui->CB_DS18B20_MAIN->isEnabled()) {
-        ui->CB_DS18B20_MAIN->setEnabled(false);
-        ui->CB_DS18B20_ADD->setCheckState(Qt::Checked);
-        ui->CB_DS18B20_ADD->setEnabled(false);
+    QCheckBox *changedCheckbox = qobject_cast<QCheckBox*>(sender());
+    if (!changedCheckbox)
+        return;
 
-        ui->CB_NTC_MAIN->setEnabled(true);
-        ui->CB_AHT20_MAIN->setEnabled(true);
-        ui->CB_NTC_ADD->setEnabled(true);
-        ui->CB_AHT20_ADD->setEnabled(true);
-
-        ui->CB_NTC_MAIN->setCheckState(Qt::Unchecked);
-        ui->CB_AHT20_MAIN->setCheckState(Qt::Unchecked);
+    if(changedCheckbox == ui->CB_DS18B20_ADD) {
+        if(ui->CB_DS18B20_MAIN->isChecked() == true)
+            ui->CB_DS18B20_ADD->setChecked(true);
+        return;
     }
 
-    if(ui->CB_NTC_MAIN->isChecked() && ui->CB_NTC_MAIN->isEnabled()) {
-        ui->CB_NTC_MAIN->setEnabled(false);
-        ui->CB_NTC_ADD->setCheckState(Qt::Checked);
-        ui->CB_NTC_ADD->setEnabled(false);
-
-        ui->CB_DS18B20_MAIN->setEnabled(true);
-        ui->CB_AHT20_MAIN->setEnabled(true);
-        ui->CB_DS18B20_ADD->setEnabled(true);
-        ui->CB_AHT20_ADD->setEnabled(true);
-
-        ui->CB_DS18B20_MAIN->setCheckState(Qt::Unchecked);
-        ui->CB_AHT20_MAIN->setCheckState(Qt::Unchecked);
+    if(changedCheckbox == ui->CB_NTC_ADD) {
+        if(ui->CB_NTC_MAIN->isChecked() == true)
+            ui->CB_NTC_ADD->setChecked(true);
+        return;
     }
 
-    if(ui->CB_AHT20_MAIN->isChecked() && ui->CB_AHT20_MAIN->isEnabled()) {
-        ui->CB_AHT20_MAIN->setEnabled(false);
-        ui->CB_AHT20_ADD->setCheckState(Qt::Checked);
-        ui->CB_AHT20_ADD->setEnabled(false);
+    if(changedCheckbox == ui->CB_AHT20_ADD) {
+        if(ui->CB_AHT20_MAIN->isChecked() == true)
+            ui->CB_AHT20_ADD->setChecked(true);
+        return;
+    }
 
-        ui->CB_NTC_MAIN->setEnabled(true);
-        ui->CB_DS18B20_MAIN->setEnabled(true);
-        ui->CB_NTC_ADD->setEnabled(true);
-        ui->CB_DS18B20_ADD->setEnabled(true);
+    if(changedCheckbox->isChecked() == false) {
+        changedCheckbox->setChecked(true);
+        return;
+    }
 
-        ui->CB_NTC_MAIN->setCheckState(Qt::Unchecked);
-        ui->CB_DS18B20_MAIN->setCheckState(Qt::Unchecked);
+    if(changedCheckbox == ui->CB_DS18B20_MAIN) {
+        ui->CB_DS18B20_ADD->setChecked(true);
+        ui->CB_NTC_MAIN->setChecked(false);
+        ui->CB_AHT20_MAIN->setChecked(false);
+    }
+
+    if(changedCheckbox == ui->CB_NTC_MAIN) {
+        ui->CB_NTC_ADD->setChecked(true);
+        ui->CB_DS18B20_MAIN->setChecked(false);
+        ui->CB_AHT20_MAIN->setChecked(false);
+    }
+
+    if(changedCheckbox == ui->CB_AHT20_MAIN) {
+        ui->CB_AHT20_ADD->setChecked(true);
+        ui->CB_NTC_MAIN->setChecked(false);
+        ui->CB_DS18B20_MAIN->setChecked(false);
+    }
+}
+
+void MainWindow::Slot_RegulationModeChoose() {
+    QCheckBox *changedCheckbox = qobject_cast<QCheckBox*>(sender());
+    if (!changedCheckbox)
+        return;
+    if(changedCheckbox->isChecked() == Qt::Unchecked)
+        return;
+
+
+    if(changedCheckbox == ui->CB_ModeFreeControl) {
+        ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
+        ui->CB_ModePID->setCheckState(Qt::Unchecked);
+    }
+
+    if(changedCheckbox == ui->CB_ModeRelay) {
+        ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
+        ui->CB_ModePID->setCheckState(Qt::Unchecked);
+    }
+
+    if(changedCheckbox == ui->CB_ModePID) {
+        ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
+        ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
     }
 }
 
@@ -607,6 +636,10 @@ void MainWindow::resetMainWindow() {
 
     ui->ValueTargetTempLabel->setText("--");
     ui->TemperatureValueText->setText("--");
+
+    ui->CB_ModeFreeControl->setCheckState(Qt::Checked);
+    ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
+    ui->CB_ModePID->setCheckState(Qt::Unchecked);
 
     ui->CB_DS18B20_MAIN->setCheckState(Qt::Checked);
     ui->CB_DS18B20_ADD->setCheckState(Qt::Checked);
@@ -658,7 +691,17 @@ void MainWindow::resetMainWindow() {
     ui->TurnOnBtn->setEnabled(true);
 }
 
+void MainWindow::Slot_RegulationModeSend() {
+    uint8_t data;
+    if(ui->CB_ModeFreeControl->isChecked())
+        data = 0;
+    if(ui->CB_ModeRelay->isChecked())
+        data = 1;
+    if(ui->CB_ModePID->isChecked())
+        data = 2;
 
+    emit sig_WriteNewData(CMD_REGULATE_MODE, &data, sizeof(uint8_t));
+}
 
 
 

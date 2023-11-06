@@ -20,6 +20,7 @@
 
 #define CMD_TURN_ON_OFF 0x10
 #define CMD_SEND_AIM_TEMPERATURE 0x25
+#define CMD_REGULATE_MODE 0x26
 #define CMD_SEND_HEAT_TIME 0x31
 #define CMD_SENSOR_CHOOSE 0x32
 #define CMD_STEP_HEAT 0x33
@@ -28,9 +29,6 @@
 #define CMD_SET_PID_COEF 0x41
 #define CMD_GET_GRAPH_ON_DISPLAY 0x43
 #define CMD_DRAW_CHOOSE 0x44
-
-#define RESET_TEMPERATURE 255
-
 
 class com_port : public QObject
 {

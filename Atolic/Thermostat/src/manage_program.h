@@ -27,8 +27,7 @@ void init_clock();
 void check_UART_cmd();
 void Measure_temperature();
 void Display_data();
-void Relay_regulating();
-void PID_regulation();
+void TemperatureRegulating();
 
 void Form_temperature_parcel(uint8_t* parcel);
 void reset_all_var();

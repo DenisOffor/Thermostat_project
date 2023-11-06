@@ -44,6 +44,7 @@ void init_periphery() {
 void check_UART_cmd() {
 	if(rx_data_state == UART_DATA_WAITING || rx_data_state == UART_CMD_RECEIVED)
 		return;
+
 	switch(rx_received_cmd) {
 		case UART_CMD_TURN_ON_OFF:
 			if(UART_data_buf[0] == 0x00)
@@ -57,21 +58,26 @@ void check_UART_cmd() {
 			temperatures.aim_temperature = UART_data_buf[0];
 			if(temperatures.aim_temperature > 120)
 				temperatures.aim_temperature = temperatures.aim_temperature - 256;
+
 			if(temperatures.aim_temperature > temperatures.curr_temperature) {
-				TIM3->CR1 |= TIM_CR1_CEN;
-				TIM14->CR1 |= TIM_CR1_CEN;
+				PID_start();
 				//regulate_status = HEATING;
 			}
 			TIM16_set_wait_time(9.f);
 			break;
 
+		case UART_CMD_REGULATE_MODE:
+			regulate_mode = (UART_data_buf[0] == 0) ? FREE_CONTROL : (UART_data_buf[0] == 1) ? RELAY : PID;
+			break;
+
 		case UART_CMD_HEAT_DURING:
-			regulate_status = HEATING_DURING_TIME;
+			program_status = STATUS_HEATING_DURING_TIME;
 			TIM6_set_heat_time(UART_data_buf[0]);
 			break;
 
 		case CMD_SENSOR_CHOOSE:
 			Set_sensors_state(UART_data_buf[0], UART_data_buf[1], UART_data_buf[2], UART_data_buf[3]);
+			AHT_state = AHT_START_CONVERSATION;
 			break;
 
 		case UART_CMD_SET_RELAY_COEF:
@@ -95,6 +101,8 @@ void check_UART_cmd() {
 		case CMD_DRAW_CHOOSE:
 			if(UART_data_buf[0] == 0x01) {
 				TFT_clearAllDisplay(0x00,0x00,0x00);
+				amount_of_got_parcel = 0;
+				parcel_state = NOT_ALL_PARCEL_HERE;
 				display_status = DISPLAY_TEMPERATURE;
 			}
 
@@ -131,17 +139,18 @@ void Display_data() {
 	if(program_status == STATUS_TURN_OFF)
 		return;
 
-	if(send_temp_on_PC == 0)
-		return;
-
 	//each 1 sec send temperatures on PC and display temperature on TFT if it chosen
-	uint8_t temprerature_parcel[12];
-	Form_temperature_parcel(&temprerature_parcel[0]);
-	UART_send_data_to_PC(temprerature_parcel, 16, SEND_TEMPERATURE);
+	if(send_temp_on_PC == 1) {
+		uint8_t temprerature_parcel[12];
+		Form_temperature_parcel(&temprerature_parcel[0]);
+		UART_send_data_to_PC(temprerature_parcel, 16, SEND_TEMPERATURE);
 
-	if(display_status == DISPLAY_TEMPERATURE) {
-		display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
-		display_temperature(temperatures.aim_temperature, AIM_TEMP);
+		if(display_status == DISPLAY_TEMPERATURE) {
+			display_temperature(temperatures.curr_temperature, CURRENT_TEMP);
+			display_temperature(temperatures.aim_temperature, AIM_TEMP);
+		}
+
+		send_temp_on_PC = 0;
 	}
 
 	//else if graph chosen then temperature already sent, just need to display graph
@@ -152,88 +161,35 @@ void Display_data() {
 		parcel_state = NOT_ALL_PARCEL_HERE;
 		amount_of_got_parcel = 0;
 	}
-
-	send_temp_on_PC = 0;
 }
 
-void Relay_regulating() {
+void TemperatureRegulating() {
 	if(program_status == STATUS_TURN_OFF)
 		return;
 
-	double time_heat = 0;
-
-	switch(regulate_status) {
-		case WAITING:
-			relay_off();
-			break;
-		case MAINTENANCE:
-			if(temperatures.curr_temperature < (temperatures.aim_temperature -
-						(constants_relay.delta - (temperatures.aim_temperature - constants_relay.room_temperature)*constants_relay.maintenance_coef) )) {
-
-				TIM6->ARR = 1000 * (1 + (temperatures.aim_temperature - constants_relay.room_temperature)*5*constants_relay.maintenance_coef);
-				relay_on();
+	switch(regulate_mode) {
+		case FREE_CONTROL:
+			if(program_status == STATUS_HEATING_DURING_TIME) {
 				TIM6->CR1 |= TIM_CR1_CEN;
-				regulate_status = PROCESS;
+				relay_on();
 			}
 			break;
-		case HEATING:
-			time_heat = (temperatures.aim_temperature - temperatures.curr_temperature)
-					/ (constants_relay.heat_for_1sec - (temperatures.aim_temperature - constants_relay.room_temperature)*constants_relay.heat_coef);
-
-			TIM6_set_heat_time(time_heat);
-			relay_on();
-			TIM6->CR1 |= TIM_CR1_CEN;
-			regulate_status = PROCESS;
-
+		case RELAY:
+			Relay_regulating();
 			break;
-		case HEATING_DURING_TIME:
-			TIM6->CR1 |= TIM_CR1_CEN;
-			relay_on();
-			break;
-		default:
+		case PID:
+			if(pid_state == PID_OFF)
+				return;
+			PID_regulation();
+		    uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
+			UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
 			break;
 	}
 }
 
-void PID_regulation() {
-	if(!(TIM3->CR1 & TIM_CR1_CEN))
-		return;
-
-    errorCurrent = temperatures.aim_temperature - temperatures.curr_temperature;
-
-    if ((((pid_coef.Ki * errorIntegral) <= PID_DUTY_CYCLE_MAX) && (errorCurrent >= 0)) ||
-        (((pid_coef.Ki * errorIntegral) >= PID_DUTY_CYCLE_MIN) && (errorCurrent < 0)))
-    {
-      errorIntegral += errorCurrent;
-    }
-
-    errorDifferential = (errorCurrent - errorPrevious);
-
-    pwmDutyCycle = pid_coef.Kp * errorCurrent + pid_coef.Ki * errorIntegral - pid_coef.Kd * errorDifferential;
-
-    if (pwmDutyCycle < PID_DUTY_CYCLE_MIN)
-    {
-      pwmDutyCycle = PID_DUTY_CYCLE_MIN;
-    }
-
-    if (pwmDutyCycle > PID_DUTY_CYCLE_MAX)
-    {
-      pwmDutyCycle = PID_DUTY_CYCLE_MAX;
-    }
-
-    errorPrevious = errorCurrent;
-
-    pid_state = PID_OFF;
-
-    TIM14->CNT = 0;
-    TIM14->CR1 |= TIM_CR1_CEN;
-
-    uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
-	UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
-}
-
 void reset_all_var() {
 	Reset_temperatures();
+	regulate_mode = FREE_CONTROL;
 
 	//reset sensors
 	ds18b20_cmd = TEMPERATURE_CONVERTING;

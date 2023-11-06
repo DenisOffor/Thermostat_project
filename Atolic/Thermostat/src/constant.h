@@ -40,9 +40,17 @@ typedef enum PROGRAM_STATUS {
 	STATUS_START,
 	STATUS_WAIT_ACTION,
 	STATUS_HEATING,
+	STATUS_HEATING_DURING_TIME,
 	STATUS_MAINTENANCE
 } PROGRAM_STATUS;
 PROGRAM_STATUS program_status;
+
+typedef enum RegulateMode {
+	FREE_CONTROL,
+	RELAY,
+	PID
+} RegulateMode;
+RegulateMode regulate_mode;
 
 void Reset_temperatures();
 

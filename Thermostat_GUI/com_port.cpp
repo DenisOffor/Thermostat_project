@@ -64,6 +64,10 @@ int com_port::SetUp()
 void com_port::slot_GetData()
 {
     QByteArray temp_buffer = this_port->readAll();
+
+    if(temp_buffer.size() < 3)
+       return;
+
     QByteArray temperature_ds;
     QByteArray temperature_ntc;
     QByteArray temperature_aht;
@@ -145,7 +149,6 @@ void com_port::slot_GetData()
             return;
             break;
         }
-
         buffer.clear();
     }
 }
@@ -214,7 +217,7 @@ void com_port::slot_SendGraph(QPixmap pixmap) {
             Matrix8bitForGraph[row][col / 8] |= (Matrix[row][col] << (col % 8));
         }
     }
-    TimerForParcel->start(200);
+    TimerForParcel->start(400);
 }
 
 static int parcel_iter = 0;

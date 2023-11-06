@@ -10,7 +10,9 @@
 Temperatures temperatures;
 Sensors_State sensors_state;
 PROGRAM_STATUS program_status = STATUS_TURN_OFF;
+RegulateMode regulate_mode = FREE_CONTROL;
 uint8_t display_status = DISPLAY_TEMPERATURE;
+
 
 void Reset_temperatures() {
 	temperatures.curr_temperature = temperatures.cur_temperature_DS
