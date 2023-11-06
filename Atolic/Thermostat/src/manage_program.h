@@ -5,6 +5,21 @@
  *      Author: denlo
  */
 
+
+
+/*
+ TIM1 used for us DS18B20
+ TIM17 used for delay 1sec for DS18B20 measurement
+ TIM6 used as heat time for relay and free control
+ TIM16 used as unit of delay for relay
+ TIM15 used as TRGO for analog sensor and time 1 sec for data transfer
+ TIM3 used as PWM for PID regulation
+ TIM14 used as delay unit for PID regulation
+
+ TIM2 slave of TIM15 for second count
+ */
+
+
 #ifndef MANAGE_PROGRAM_H_
 #define MANAGE_PROGRAM_H_
 
@@ -15,6 +30,7 @@
 #include "init_TEC_throght_relay.h"
 #include "UART_for_PC.h"
 #include "PID_regulator.h"
+#include "Step_Heat.h"
 #include "string.h"
 
 uint8_t send_temp_on_PC;

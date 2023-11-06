@@ -34,7 +34,7 @@ void DS18B20_measure_temperature();
 void init_ds();
 void init_Gpio_for_ds();
 void init_tim1_for_us();
-void init_tim2_for_delay();
+void init_tim17_for_delay();
 uint8_t ds_reset_pulse();
 void ds_write_bit(uint8_t bit);
 uint8_t ds_read_bit();

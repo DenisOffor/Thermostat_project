@@ -48,7 +48,9 @@ PROGRAM_STATUS program_status;
 typedef enum RegulateMode {
 	FREE_CONTROL,
 	RELAY,
-	PID
+	PID,
+	STEP_HEAT,
+	HEAT_IN_TIME
 } RegulateMode;
 RegulateMode regulate_mode;
 

@@ -63,6 +63,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->CB_ModeFreeControl, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
     connect(ui->CB_ModeRelay, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
     connect(ui->CB_ModePID, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
+    connect(ui->CB_ModeStepHeating, &QCheckBox::released, this, &MainWindow::Slot_RegulationModeChoose);
+
 
     connect(ui->XMinLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
     connect(ui->XMaxLineEdit, &QLineEdit::editingFinished, this, &MainWindow::Slot_ManualAxisScale);
@@ -594,22 +596,33 @@ void MainWindow::Slot_RegulationModeChoose() {
     QCheckBox *changedCheckbox = qobject_cast<QCheckBox*>(sender());
     if (!changedCheckbox)
         return;
-    if(changedCheckbox->isChecked() == Qt::Unchecked)
-        return;
 
+    if(changedCheckbox->isChecked() == false) {
+        changedCheckbox->setChecked(true);
+        return;
+    }
 
     if(changedCheckbox == ui->CB_ModeFreeControl) {
         ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
         ui->CB_ModePID->setCheckState(Qt::Unchecked);
+        ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
     }
 
     if(changedCheckbox == ui->CB_ModeRelay) {
         ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
         ui->CB_ModePID->setCheckState(Qt::Unchecked);
+        ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
     }
 
     if(changedCheckbox == ui->CB_ModePID) {
         ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
+        ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
+        ui->CB_ModeStepHeating->setCheckState(Qt::Unchecked);
+    }
+
+    if(changedCheckbox == ui->CB_ModeStepHeating) {
+        ui->CB_ModeRelay->setCheckState(Qt::Unchecked);
+        ui->CB_ModePID->setCheckState(Qt::Unchecked);
         ui->CB_ModeFreeControl->setCheckState(Qt::Unchecked);
     }
 }
@@ -692,15 +705,37 @@ void MainWindow::resetMainWindow() {
 }
 
 void MainWindow::Slot_RegulationModeSend() {
-    uint8_t data;
-    if(ui->CB_ModeFreeControl->isChecked())
-        data = 0;
-    if(ui->CB_ModeRelay->isChecked())
-        data = 1;
-    if(ui->CB_ModePID->isChecked())
-        data = 2;
+    uint8_t data[3];
+    uint8_t parcel_size;
 
-    emit sig_WriteNewData(CMD_REGULATE_MODE, &data, sizeof(uint8_t));
+    if(ui->CB_ModeFreeControl->isChecked()) {
+        data[0] = 0;
+        parcel_size = 1;
+    }
+
+    if(ui->CB_ModeRelay->isChecked()) {
+       data[0] = 1;
+       parcel_size = 1;
+    }
+
+    if(ui->CB_ModePID->isChecked()) {
+       data[0] = 2;
+       parcel_size = 1;
+    }
+
+    if(ui->CB_ModeStepHeating->isChecked()) {
+       if(ui->StepHeatTsetLineEdit->text() == NULL || ui->StepHeatStepLineEdit->text() == NULL) {
+            QMessageBox::warning(this,"Ошибка!", "Введите все коэффициенты");
+            return;
+       }
+       data[0] = 3;
+       data[1] = ui->StepHeatTsetLineEdit->text().toInt();
+       data[2] = ui->StepHeatStepLineEdit->text().toInt();
+       parcel_size = 3;
+    }
+
+
+    emit sig_WriteNewData(CMD_REGULATE_MODE, data, parcel_size);
 }
 
 

@@ -12,9 +12,9 @@ DS18B20_CMD ds18b20_cmd = TEMPERATURE_CONVERTING;
 uint8_t ds_buff[9];
 uint16_t temp;
 
-void TIM2_IRQHandler() {
-	TIM2->SR &= ~TIM_SR_UIF;
-	TIM2->CR1 &= ~TIM_CR1_CEN;
+void TIM17_IRQHandler() {
+	TIM17->SR &= ~TIM_SR_UIF;
+	TIM17->CR1 &= ~TIM_CR1_CEN;
 	ds18b20_cmd = TEMPERATURE_READING;
 }
 
@@ -36,7 +36,7 @@ void DS18B20_measure_temperature() {
 void init_ds() {
 	init_Gpio_for_ds();
 	init_tim1_for_us();
-	init_tim2_for_delay();
+	init_tim17_for_delay();
 }
 
 void init_Gpio_for_ds() {
@@ -53,14 +53,14 @@ void init_tim1_for_us() {
 	TIM1->CR1 = TIM_CR1_CEN;
 }
 
-void init_tim2_for_delay() {
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-	TIM2->ARR = 8000;
-	TIM2->PSC = 1000 * FREQ_MULTIPLIER_COEF;
-	TIM2->DIER |= TIM_DIER_UIE;
-	NVIC_EnableIRQ(TIM2_IRQn);
-	NVIC_SetPriority(TIM2_IRQn, 1);
-	TIM2->CR1 = TIM_CR1_CEN;
+void init_tim17_for_delay() {
+	RCC->APB2ENR |= RCC_APB2ENR_TIM17EN;
+	TIM17->ARR = 8000;
+	TIM17->PSC = 1000 * FREQ_MULTIPLIER_COEF;
+	TIM17->DIER |= TIM_DIER_UIE;
+	NVIC_EnableIRQ(TIM17_IRQn);
+	NVIC_SetPriority(TIM17_IRQn, 1);
+	TIM17->CR1 = TIM_CR1_CEN;
 }
 
 uint8_t ds_reset_pulse()
@@ -120,8 +120,8 @@ uint8_t ds_read_byte()
 }
 
 void TIM_on_1sec() {
-	TIM2->CNT = 0;
-	TIM2->CR1 = TIM_CR1_CEN;
+	TIM17->CNT = 0;
+	TIM17->CR1 = TIM_CR1_CEN;
 }
 
 void temperature_measurment_start() {

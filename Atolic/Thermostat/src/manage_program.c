@@ -37,6 +37,7 @@ void init_periphery() {
 	init_PID_regulation();
 
 	//service function for initial program states set
+	Init_TIM2_as_Sec_counter();
 	init_TIM15_as_TRGO_for_ADC_and_1sec_timer();
 	reset_all_var();
 }
@@ -59,15 +60,47 @@ void check_UART_cmd() {
 			if(temperatures.aim_temperature > 120)
 				temperatures.aim_temperature = temperatures.aim_temperature - 256;
 
-			if(temperatures.aim_temperature > temperatures.curr_temperature) {
+			if(regulate_mode == PID) {
 				PID_start();
-				//regulate_status = HEATING;
+				Relay_off();
 			}
-			TIM16_set_wait_time(9.f);
+
+			if(regulate_mode == RELAY) {
+				Relay_start();
+				PID_stop();
+			}
 			break;
 
 		case UART_CMD_REGULATE_MODE:
-			regulate_mode = (UART_data_buf[0] == 0) ? FREE_CONTROL : (UART_data_buf[0] == 1) ? RELAY : PID;
+			if(UART_data_buf[0] == 0) {
+				regulate_mode = FREE_CONTROL;
+				PID_stop();
+				Relay_off();
+			}
+
+			if(UART_data_buf[0] == 1) {
+				regulate_mode = RELAY;
+				Relay_start();
+				PID_stop();
+			}
+
+			if(UART_data_buf[0] == 2) {
+				regulate_mode = PID;
+				PID_start();
+				Relay_off();
+			}
+
+			if(UART_data_buf[0] == 3) {
+				regulate_mode = STEP_HEAT;
+				Step_heat_var.aim_temperature = UART_data_buf[1];
+				Step_heat_var.step = UART_data_buf[2];
+				PID_start();
+				Relay_off();
+				//calc intermediate temperature first time and increment CNT in order not to calc second time for 0 % 60 = 0;
+				Calc_Intermediate_temperature();
+				TIM2->CNT = 1;
+			}
+
 			break;
 
 		case UART_CMD_HEAT_DURING:
@@ -164,7 +197,7 @@ void Display_data() {
 }
 
 void TemperatureRegulating() {
-	if(program_status == STATUS_TURN_OFF)
+	if(program_status == STATUS_TURN_OFF || temperatures.aim_temperature == RESET_TEMPERATURE)
 		return;
 
 	switch(regulate_mode) {
@@ -178,11 +211,21 @@ void TemperatureRegulating() {
 			Relay_regulating();
 			break;
 		case PID:
-			if(pid_state == PID_OFF)
-				return;
-			PID_regulation();
-		    uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
-			UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
+			if(pid_state == PID_ON) {
+				PID_regulation(temperatures.curr_temperature, temperatures.aim_temperature);
+				//debug
+				uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
+				UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
+			}
+			break;
+		case STEP_HEAT:
+			Calc_Intermediate_temperature();
+			if(pid_state == PID_ON) {
+				PID_regulation(temperatures.curr_temperature, Step_heat_var.intermediate_temperature);
+				//debug
+				uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
+				UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
+			}
 			break;
 	}
 }

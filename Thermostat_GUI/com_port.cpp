@@ -98,7 +98,7 @@ void com_port::slot_GetData()
             data.append((uint8_t)buffer.at(15));
             emit sig_TempertureInBuffer(temperature_ds, temperature_ntc, temperature_aht, data);
             break;
-        case PWM_ADDRESS:
+        case DEBUG:
             buffer.remove(0,1);
             lowByte = static_cast<uint8_t>(buffer.at(1)); // Младший байт
             highByte = static_cast<uint8_t>(buffer.at(0)); // Старший байт
@@ -141,7 +141,7 @@ void com_port::slot_GetData()
             data.append((uint8_t)buffer.at(15));
             emit sig_TempertureInBuffer(temperature_ds, temperature_ntc, temperature_aht, data);
             break;
-        case PWM_ADDRESS:
+        case DEBUG:
             buffer.remove(0,1);
             qDebug() << "PWM cycle: " << buffer.toInt() << "\n";
             break;

@@ -29,29 +29,26 @@ void TIM3_IRQHandler(void) {
 	TIM3->CCR1 = 1000 - (uint16_t)pwmDutyCycle;
 }
 
-void PID_regulation() {
+void PID_regulation(float cur_temp, float aim_temp) {
 	if(!(TIM3->CR1 & TIM_CR1_CEN))
 		return;
 
-    errorCurrent = temperatures.aim_temperature - temperatures.curr_temperature;
+    errorCurrent = aim_temp - cur_temp;
 
     if ((((pid_coef.Ki * errorIntegral) <= PID_DUTY_CYCLE_MAX) && (errorCurrent >= 0)) ||
-        (((pid_coef.Ki * errorIntegral) >= PID_DUTY_CYCLE_MIN) && (errorCurrent < 0)))
-    {
-      errorIntegral += errorCurrent;
+        (((pid_coef.Ki * errorIntegral) >= PID_DUTY_CYCLE_MIN) && (errorCurrent < 0))) {
+    	errorIntegral += errorCurrent;
     }
 
     errorDifferential = (errorCurrent - errorPrevious);
 
     pwmDutyCycle = pid_coef.Kp * errorCurrent + pid_coef.Ki * errorIntegral + pid_coef.Kd * errorDifferential;
 
-    if (pwmDutyCycle < PID_DUTY_CYCLE_MIN)
-    {
+    if (pwmDutyCycle < PID_DUTY_CYCLE_MIN) {
       pwmDutyCycle = PID_DUTY_CYCLE_MIN;
     }
 
-    if (pwmDutyCycle > PID_DUTY_CYCLE_MAX)
-    {
+    if (pwmDutyCycle > PID_DUTY_CYCLE_MAX) {
       pwmDutyCycle = PID_DUTY_CYCLE_MAX;
     }
 
@@ -112,8 +109,6 @@ void init_tim14_as_delay_unit() {
 
 	NVIC_EnableIRQ(TIM14_IRQn);
 	NVIC_SetPriority(TIM14_IRQn,5);
-
-	TIM14->CR1 |= TIM_CR1_CEN;
 }
 
 void set_Pid_Coef(uint16_t Kp, uint16_t Ki, uint16_t Kd) {

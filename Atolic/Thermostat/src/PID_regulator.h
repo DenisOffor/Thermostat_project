@@ -32,7 +32,7 @@ typedef struct Pid_Coef {
 } Pid_Coef;
 Pid_Coef pid_coef;
 
-void PID_regulation();
+void PID_regulation(float cur_temp, float aim_temp);
 void PID_start();
 void PID_stop();
 void init_PID_regulation();

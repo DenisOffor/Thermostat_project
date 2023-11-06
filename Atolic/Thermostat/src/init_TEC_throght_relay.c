@@ -77,6 +77,7 @@ void Relay_start() {
 }
 
 void Relay_off() {
+	relay_off();
 	regulate_status = WAITING;
 	TIM6->CNT = 0;
 	TIM6->CR1 &= ~TIM_CR1_CEN;
