@@ -18,6 +18,10 @@ TemperatureGraph::TemperatureGraph(QGroupBox* groupBox)
     plot->setBackground(QBrush(gradient));
     plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
+
+    plot->xAxis->setLabel("Время, с");
+    plot->yAxis->setLabel("Температура, °C");
+
     plot->replot();
 }
 

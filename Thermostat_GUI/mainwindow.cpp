@@ -88,15 +88,13 @@ MainWindow::~MainWindow()
 {
     my_com_this->this_port->waitForBytesWritten(-1);
     delete my_com_this;
+    delete TimerForHeatSendorResearch;
     delete TimerForGraph;
     delete MyGraph;
     delete ui;
 }
 
 void MainWindow::Slot_SaveGraphAs() {
-    if(clicke[BTN_TURNON] == false)
-        return;
-
     MyGraph->SaveGraphAs();
 }
 
@@ -143,8 +141,6 @@ void MainWindow::slot_DisplayTemperatureValue(const QByteArray temp_ds, const QB
 }
 
 void MainWindow::Slot_ClearGraph() {
-    if(clicke[BTN_TURNON] == false)
-        return;
     if(pause == true)
         emit ui->BtnPause->clicked();
 
@@ -375,9 +371,6 @@ void MainWindow::Slot_BtnExpandThermostatFeatures_clicked() {
 }
 
 void MainWindow::Slot_PauseGraph() {
-
-    if(clicke[BTN_TURNON] == false)
-        return;
     if(!pause){
         MyGraph->Pause_time.first = GetTickCount();
         ui->BtnPause->setStyleSheet("QPushButton::hover{ "
@@ -418,13 +411,14 @@ void MainWindow::Slot_PauseGraph() {
 }
 
 void MainWindow::Slot_HeatDuring() {
-    if(clicke[BTN_TURNON] == false)
+    if(ui->CB_ModeFreeControl->isChecked() == false) {
+        QMessageBox::warning(this,"Ошибка!", "Выберите свободное управление!");
         return;
+    }
 
     uint8_t time = ui->HeatTimeLineEdit->text().toInt();
     if(time <= 0 || time > 60)
         return;
-
     emit sig_WriteNewData(CMD_SEND_HEAT_TIME, &time, sizeof(uint8_t));
 }
 
@@ -681,9 +675,9 @@ void MainWindow::resetMainWindow() {
     ui->RelayCoefMaintLineEdit->setText("0.006");
     ui->RelayCoefTroomLineEdit->setText("27");
 
-    ui->PidKpLineEdit->setText("300");
-    ui->PidKiLineEdit->setText("4");
-    ui->PidKdLineEdit->setText("10");
+    ui->PidKpLineEdit->setText("250");
+    ui->PidKiLineEdit->setText("6");
+    ui->PidKdLineEdit->setText("300");
 
     ui->HeatTimeLineEdit->setText("");
 
@@ -763,9 +757,5 @@ void MainWindow::Slot_RegulationModeSend() {
 
     emit sig_WriteNewData(CMD_REGULATE_MODE, data, parcel_size);
 }
-
-
-
-
 
 

@@ -4,8 +4,6 @@
 int main(void)
 {
 	init_periphery();
-	RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
-	GPIOC->MODER |= GPIO_MODER_MODER8_0;
 
 	while (1)
 	{

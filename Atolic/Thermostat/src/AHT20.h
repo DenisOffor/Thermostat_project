@@ -14,6 +14,7 @@
 #define AHT_CMD_CONVERT_TEMPERATURE 0xAC
 
 uint8_t AHT_state;
+uint8_t start_state;
 #define AHT_START_CONVERSATION 0
 #define AHT_READ_CONVERSATION 1
 

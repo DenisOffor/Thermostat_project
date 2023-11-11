@@ -78,7 +78,7 @@ void PID_stop() {
 void init_PID_regulation() {
 	init_TIM3_for_PWM();
 	init_tim14_as_delay_unit();
-	set_Pid_Coef(300, 4, 10);
+	set_Pid_Coef(300, 4, 400);
 }
 
 void init_TIM3_for_PWM() {
@@ -125,5 +125,5 @@ void PID_reset() {
 	TIM14->CNT = 0;
 	TIM14->CR1 &= ~TIM_CR1_CEN;
 	pid_state = PID_OFF;
-	set_Pid_Coef(300, 4, 10);
+	set_Pid_Coef(300, 4, 400);
 }

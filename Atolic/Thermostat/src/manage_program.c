@@ -14,7 +14,8 @@ void TIM15_IRQHandler() {
 	TIM15->SR &= ~TIM_SR_UIF;
 	Second_pass_switcherFirst = 1;
 	Second_pass_switcherSecond = 1;
-	AHT_state = AHT_READ_CONVERSATION;
+	if(sensors_state.AHT_as_add_sensor == 1)
+		AHT_state = AHT_READ_CONVERSATION;
 }
 
 void init_periphery() {
@@ -53,7 +54,7 @@ void check_UART_cmd() {
 			if(UART_data_buf[0] == 0x00)
 				program_status = STATUS_TURN_OFF;
 			if(UART_data_buf[0] == 0x01)
-				program_status = STATUS_START;
+				program_status = STATUS_WAIT_ACTION;
 			reset_all_var();
 			break;
 
@@ -63,40 +64,51 @@ void check_UART_cmd() {
 				temperatures.aim_temperature = temperatures.aim_temperature - 256;
 
 			if(regulate_mode == PID) {
-				PID_start();
+				program_status = STATUS_HEATING;
+				if(temperatures.aim_temperature != RESET_TEMPERATURE)
+					PID_start();
 				Relay_off();
 			}
 
 			if(regulate_mode == RELAY) {
-				Relay_start();
+				program_status = STATUS_HEATING;
+				if(temperatures.aim_temperature != RESET_TEMPERATURE)
+					Relay_start();
 				PID_stop();
 			}
 			break;
 
 		case UART_CMD_REGULATE_MODE:
 			if(UART_data_buf[0] == 0) {
+				program_status = STATUS_WAIT_ACTION;
 				regulate_mode = FREE_CONTROL;
 				PID_stop();
 				Relay_off();
 			}
 
 			if(UART_data_buf[0] == 1) {
+				program_status = STATUS_HEATING;
 				regulate_mode = RELAY;
-				Relay_start();
+				if(temperatures.aim_temperature != RESET_TEMPERATURE)
+					Relay_start();
 				PID_stop();
 			}
 
 			if(UART_data_buf[0] == 2) {
+				program_status = STATUS_HEATING;
 				regulate_mode = PID;
-				PID_start();
+				if(temperatures.aim_temperature != RESET_TEMPERATURE)
+					PID_start();
 				Relay_off();
 			}
 
 			if(UART_data_buf[0] == 3) {
+				program_status = STATUS_STEP_HEATING;
 				regulate_mode = STEP_HEAT;
 				Step_heat_var.aim_temperature = UART_data_buf[1];
 				Step_heat_var.step = UART_data_buf[2];
 				Step_heat_var.tau_wait = UART_data_buf[3];
+				Step_heat_var.prev_temperature = temperatures.curr_temperature;
 				PID_start();
 				Relay_off();
 				TIM2->CNT = 0;
@@ -105,6 +117,7 @@ void check_UART_cmd() {
 			}
 
 			if(UART_data_buf[0] == 4) {
+				program_status = STATUS_HEAT_IN_TIME;
 				regulate_mode = HEAT_IN_TIME;
 				Heat_in_time_var.aim_temperature = UART_data_buf[1];
 				Heat_in_time_var.tau_heat = UART_data_buf[2];
@@ -188,7 +201,7 @@ void Display_data() {
 
 	//each 1 sec send temperatures on PC and display temperature on TFT if it chosen
 	if(Second_pass_switcherFirst == 1) {
-		uint8_t temprerature_parcel[12];
+		uint8_t temprerature_parcel[16];
 		Form_temperature_parcel(&temprerature_parcel[0]);
 		UART_send_data_to_PC(temprerature_parcel, 16, SEND_TEMPERATURE);
 
@@ -227,6 +240,8 @@ void TemperatureRegulating() {
 		case PID:
 			if(pid_state == PID_ON) {
 				PID_regulation(temperatures.curr_temperature, temperatures.aim_temperature);
+				uint8_t data[2] = {((pwmDutyCycle >> 8) & 0xFF), (pwmDutyCycle & 0xFF)};
+				UART_send_data_to_PC(&data[0], 2, PWM_ADDRESS);
 			}
 			break;
 		case STEP_HEAT:
@@ -309,6 +324,7 @@ void Form_temperature_parcel(uint8_t* temprerature_parcel) {
 	temprerature_parcel[13] = temperatures.cur_temperature_DS == RESET_TEMPERATURE ? 0 : sensors_state.DS_as_add_sensor;
 	temprerature_parcel[14] = temperatures.cur_temperature_NTC == RESET_TEMPERATURE ? 0 : sensors_state.NTC_as_add_sensor;
 	temprerature_parcel[15] = temperatures.cur_temperature_AHT == RESET_TEMPERATURE ? 0 : sensors_state.AHT_as_add_sensor;
+	//temprerature_parcel[16] = program_status;
 }
 
 void Clear_sensors_state() {

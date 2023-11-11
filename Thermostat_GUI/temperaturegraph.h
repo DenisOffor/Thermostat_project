@@ -41,6 +41,7 @@ public:
     QPair<double, double> GetXRange();
     QPair<double, double> GetYRange();
     QCustomPlot* GetPlot();
+    void Vertical_line(uint8_t line_number);
     //void AutoAxisScale(QMainWindow* ui, const QByteArray& data);
     //bool CheckTemperatureCorrectness(double temprerature);
 };

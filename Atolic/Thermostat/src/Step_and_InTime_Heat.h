@@ -13,6 +13,7 @@
 
 typedef struct StepHeatVar{
 	uint8_t aim_temperature;
+	float prev_temperature;
 	float intermediate_temperature;
 	uint8_t tau_wait;
 	uint8_t step;

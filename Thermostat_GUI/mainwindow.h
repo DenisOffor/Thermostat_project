@@ -33,6 +33,7 @@ private:
     com_port *my_com_this;
     Ui::MainWindow *ui;
     QTimer* TimerForGraph;
+    QTimer* TimerForHeatSendorResearch;
 
     //bool for buttoms push check
     bool clicke[AMOUNT_OF_BTN];

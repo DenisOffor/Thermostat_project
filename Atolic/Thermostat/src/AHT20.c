@@ -9,6 +9,7 @@
 #include "AHT20.h"
 
 uint8_t AHT_state = AHT_START_CONVERSATION;
+uint8_t start_state = 0;
 
 void I2C_for_AHT_init() {
 	RCC->AHBENR |= RCC_AHBENR_GPIOFEN;
@@ -65,14 +66,16 @@ void AHT_measure_temperature() {
 	if(AHT_state == AHT_START_CONVERSATION) {
 		uint8_t data[3] = {AHT_CMD_CONVERT_TEMPERATURE, 0x33, 0x00};
 		I2C_AHT_Send_NBytes(AHT_ADDRESS, &data[0], 3);
+		start_state = 1;
 		return;
 	}
 
-	if(AHT_state == AHT_READ_CONVERSATION) {
+	if(AHT_state == AHT_READ_CONVERSATION && start_state == 1) {
 		uint8_t result[6];
 		I2C_Get_Data(AHT_ADDRESS, &(result[0]), 6);
 		float buffer = (((uint32_t)result[3] & 15) << 16) | ((uint32_t)result[4] << 8) | result[5];
 		temperatures.cur_temperature_AHT = (float)(buffer * 200.00 / 1048576.00) - 50.00;
 		AHT_state = AHT_START_CONVERSATION;
+		start_state = 0;
 	}
 }
